@@ -40,7 +40,8 @@ function serveStatic(req, res) {
 
   if (urlPath === '/api/info') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ lanUrls: getLanAddresses().map((ip) => `http://${ip}:${PORT}`), port: PORT }));
+    const lanUrls = process.env.RENDER ? [] : getLanAddresses().map((ip) => `http://${ip}:${PORT}`);
+    res.end(JSON.stringify({ lanUrls, port: PORT }));
     return;
   }
 
