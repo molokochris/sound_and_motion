@@ -1,140 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>JS Joust — Controller</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-<script src="/socket.io/socket.io.js"></script>
-<style>
-  :root {
-    --purple: #7C5CFC;
-    --pink: #F0578F;
-    --coral: #FF7A6E;
-  }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body {
-    margin: 0; height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #0d0b1a;
-    color: white;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center;
-    padding: 24px;
-    transition: background 0.3s;
-  }
-  body.alive-live { background: linear-gradient(160deg, #1a1530, var(--purple)); }
-  body.alive-freeze { background: linear-gradient(160deg, #1a1530, var(--pink)); animation: warn 0.5s infinite alternate; }
-  body.dead { background: #1a1a1a; }
-  @keyframes warn { from { filter: brightness(1); } to { filter: brightness(1.3); } }
-  h1 { font-size: 1.8rem; margin-bottom: 8px; }
-  input {
-    font-size: 1.2rem; padding: 14px; border-radius: 12px; border: none;
-    width: 80%; max-width: 300px; text-align: center; margin-bottom: 12px;
-  }
-  button {
-    font-size: 1.2rem; padding: 16px 32px; border-radius: 12px; border: none;
-    background: linear-gradient(90deg, var(--purple), var(--pink));
-    color: white; cursor: pointer; font-weight: 700; width: 80%; max-width: 300px;
-  }
-  #status { font-size: 1.4rem; font-weight: 800; margin-top: 20px; }
-  #hint { opacity: 0.7; margin-top: 10px; font-size: 0.95rem; }
-  #screen-join, #screen-game { display: none; }
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>SkyJoust — Controller</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/style.css">
 </head>
-<body>
+<body class="controller-body">
 
-<div id="screen-join">
-  <h1>Join JS Joust</h1>
-  <input id="roomInput" placeholder="ROOM CODE" maxlength="4" autocapitalize="characters" />
-  <br/>
-  <input id="nameInput" placeholder="Your name" maxlength="16" />
-  <br/>
-  <button id="joinBtn">Join Game</button>
-  <div id="hint"></div>
-</div>
+  <!-- ---------- JOIN SCREEN ---------- -->
+  <section id="screen-join" class="screen active">
+    <div class="join-card">
+      <div class="brand-title">SKYJOUST</div>
+      <div class="brand-sub">Your phone is the joust.</div>
 
-<div id="screen-game">
-  <h1 id="playerName"></h1>
-  <div id="status">Waiting for host...</div>
-  <div id="hint">Hold your phone still when the FREEZE hits — any movement and you're out.</div>
-</div>
+      <label class="field-label" for="input-room">ROOM CODE</label>
+      <input id="input-room" class="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD" inputmode="text">
 
-<script>
-  const socket = io();
-  const params = new URLSearchParams(location.search);
-  if (params.get("room")) document.getElementById("roomInput").value = params.get("room").toUpperCase();
+      <label class="field-label" for="input-name">YOUR NAME</label>
+      <input id="input-name" class="name-input" maxlength="14" autocomplete="off" placeholder="Sir Reginald">
 
-  let currentPhase = "lobby";
-  let alive = true;
+      <button id="btn-join" class="btn-primary">JOIN ROOM</button>
+      <div id="join-error" class="error-line"></div>
+    </div>
+  </section>
 
-  document.getElementById("joinBtn").onclick = async () => {
-    const roomCode = document.getElementById("roomInput").value.trim().toUpperCase();
-    const name = document.getElementById("nameInput").value.trim() || "Player";
-    if (!roomCode) return;
+  <!-- ---------- WAITING SCREEN ---------- -->
+  <section id="screen-waiting" class="screen">
+    <div class="waiting-wrap">
+      <div id="my-avatar" class="avatar-dot"></div>
+      <div class="brand-sub" id="waiting-name">You're in!</div>
+      <div class="waiting-msg">Waiting for the host to start the joust…</div>
+      <button id="btn-motion" class="btn-secondary">ENABLE TILT CONTROLS</button>
+      <div class="waiting-hint">Or just use the buttons below when the game starts.</div>
+    </div>
+  </section>
 
-    // iOS 13+ requires explicit permission for motion sensors
-    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
-      try {
-        const perm = await DeviceMotionEvent.requestPermission();
-        if (perm !== "granted") {
-          document.getElementById("hint").textContent = "Motion permission denied — can't play without it.";
-          return;
-        }
-      } catch (e) {
-        document.getElementById("hint").textContent = "Motion permission error: " + e.message;
-        return;
-      }
-    }
+  <!-- ---------- PLAY SCREEN ---------- -->
+  <section id="screen-play" class="screen">
+    <div id="beat-pulse" class="beat-pulse"></div>
+    <div class="play-hud">
+      <div id="play-status" class="play-status">ALIVE</div>
+      <div id="play-score" class="play-score">0</div>
+    </div>
+    <div id="zone-left" class="touch-zone zone-left">◀</div>
+    <div id="zone-right" class="touch-zone zone-right">▶</div>
+    <div id="zone-flap" class="flap-zone">FLAP</div>
+    <div id="tilt-indicator" class="tilt-indicator hidden"></div>
+  </section>
 
-    socket.emit("player:join", { roomCode, name }, (res) => {
-      if (res.error) {
-        document.getElementById("hint").textContent = res.error;
-        return;
-      }
-      document.getElementById("screen-join").style.display = "none";
-      document.getElementById("screen-game").style.display = "block";
-      document.getElementById("playerName").textContent = name;
-      startMotionTracking();
-    });
-  };
+  <!-- ---------- ELIMINATED / RESULTS SCREEN ---------- -->
+  <section id="screen-end" class="screen">
+    <div class="waiting-wrap">
+      <div class="brand-title" id="end-title" style="font-size:22px;">UNHORSED</div>
+      <div class="waiting-msg" id="end-detail">You were unhorsed. Watch the arena on the big screen!</div>
+      <div class="waiting-hint">Waiting for the next round…</div>
+    </div>
+  </section>
 
-  function startMotionTracking() {
-    let lastX = null, lastY = null, lastZ = null;
-    window.addEventListener("devicemotion", (e) => {
-      const acc = e.accelerationIncludingGravity;
-      if (!acc || acc.x === null) return;
-      if (lastX !== null) {
-        const magnitude = Math.abs(acc.x - lastX) + Math.abs(acc.y - lastY) + Math.abs(acc.z - lastZ);
-        if (alive) socket.emit("player:motion", magnitude);
-      }
-      lastX = acc.x; lastY = acc.y; lastZ = acc.z;
-    });
-  }
+  <div id="conn-banner" class="conn-banner hidden">Reconnecting…</div>
 
-  socket.on("game:phase", ({ phase }) => {
-    currentPhase = phase;
-    const status = document.getElementById("status");
-    document.body.className = alive ? (phase === "freeze" ? "alive-freeze" : "alive-live") : "dead";
-    if (!alive) return;
-    if (phase === "lobby") status.textContent = "Waiting for host...";
-    if (phase === "live") status.textContent = "Move freely 🎶";
-    if (phase === "freeze") status.textContent = "❄️ FREEZE! DON'T MOVE ❄️";
-  });
-
-  socket.on("player:eliminated", () => {
-    alive = false;
-    document.body.className = "dead";
-    document.getElementById("status").textContent = "💀 You're out";
-    if (navigator.vibrate) navigator.vibrate(300);
-  });
-
-  socket.on("game:winner", () => {
-    if (alive) document.getElementById("status").textContent = "🏆 YOU WIN! 🏆";
-  });
-
-  socket.on("game:hostLeft", () => {
-    document.getElementById("status").textContent = "Host left the game.";
-  });
-</script>
+<script src="/controller.js"></script>
 </body>
 </html>

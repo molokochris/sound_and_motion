@@ -1,17 +1,15 @@
 {
-  "name": "js-joust",
+  "name": "skyjoust-party",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Phones-as-controllers party joust game with music-driven mechanics, real-time WebSocket relay.",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/echo-test.js && node test/integration-test.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^5.2.1",
-    "socket.io": "^4.8.3"
-  }
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "license": "MIT"
 }

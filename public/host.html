@@ -1,165 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>JS Joust — Host</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkyJoust — Host Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared/style.css">
 <style>
-  :root {
-    --purple: #7C5CFC;
-    --pink: #F0578F;
-    --blue: #3D5AFE;
-    --coral: #FF7A6E;
-    --bg: #0d0b1a;
+  body{ display:flex; align-items:center; justify-content:center; touch-action:auto; user-select:none; }
+  #stage{ position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+
+  /* ---------------- LOBBY ---------------- */
+  #lobby{
+    display:flex; flex-direction:column; align-items:center; gap:22px;
+    text-align:center; padding:30px;
   }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: radial-gradient(circle at top, #1a1530, var(--bg));
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 40px 20px;
+  #room-code{
+    font-family:'Press Start 2P'; font-size:64px; color:var(--torch-glow);
+    letter-spacing:14px; text-shadow:4px 4px 0 var(--lava);
   }
-  h1 {
-    font-size: 3rem;
-    background: linear-gradient(90deg, var(--purple), var(--pink));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    margin-bottom: 0;
+  #join-instructions{ color:var(--stone-lt); font-weight:600; font-size:15px; }
+  #join-urls{ font-family:'Press Start 2P'; font-size:13px; color:var(--parch); line-height:2; }
+  #qr-wrap{ background:#fff; padding:10px; border-radius:10px; display:none; }
+  #qr-wrap.show{ display:block; }
+  #qr-img{ width:150px; height:150px; display:block; }
+
+  #player-grid{
+    display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:800px; min-height:70px;
   }
-  #roomCode {
-    font-size: 5rem;
-    letter-spacing: 0.3em;
-    font-weight: 800;
-    margin: 20px 0;
+  .player-chip{
+    display:flex; align-items:center; gap:8px;
+    background:rgba(74,78,105,0.4); border:2px solid var(--stone);
+    border-radius:30px; padding:8px 16px 8px 8px;
+    font-weight:800; font-size:14px;
+    animation: pop-in 0.25s ease;
   }
-  #qr { background: white; padding: 16px; border-radius: 16px; margin-bottom: 30px; }
-  #joinUrl { opacity: 0.6; margin-bottom: 30px; }
-  button {
-    font-size: 1.2rem;
-    padding: 16px 32px;
-    border-radius: 12px;
-    border: none;
-    background: linear-gradient(90deg, var(--purple), var(--blue));
-    color: white;
-    cursor: pointer;
-    margin: 8px;
-    font-weight: 700;
+  @keyframes pop-in{ from{ transform:scale(0.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
+  .player-chip .dot{ width:22px; height:22px; border-radius:50%; }
+
+  #btn-start{ margin-top:6px; }
+  #lobby-hint{ color:var(--stone-lt); font-size:13px; }
+
+  /* ---------------- COUNTDOWN ---------------- */
+  #countdown{
+    font-family:'Press Start 2P'; font-size:120px; color:var(--torch-glow);
+    text-shadow:5px 5px 0 var(--lava);
   }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  #freezeBtn { background: linear-gradient(90deg, var(--pink), var(--coral)); }
-  #players {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    width: 100%;
-    max-width: 900px;
-    margin-top: 30px;
+
+  /* ---------------- GAME ---------------- */
+  #canvas-wrap{ position:relative; }
+  canvas{ display:block; box-shadow:0 0 0 3px var(--stone), 0 0 80px rgba(255,122,61,0.15); border-radius:2px; }
+  #game-hud{
+    position:absolute; top:10px; left:10px; right:10px;
+    display:flex; justify-content:space-between;
+    font-family:'Press Start 2P'; font-size:12px;
+    pointer-events:none;
   }
-  .player-card {
-    background: rgba(255,255,255,0.06);
-    border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 16px;
-    text-align: center;
-    transition: all 0.2s;
+  #scoreboard{ display:flex; gap:16px; flex-wrap:wrap; }
+  .sb-entry{ display:flex; align-items:center; gap:6px; text-shadow:2px 2px 0 rgba(0,0,0,0.6); }
+  .sb-entry .dot{ width:10px; height:10px; border-radius:50%; }
+  .sb-entry.dead{ opacity:0.35; text-decoration:line-through; }
+  #bpm-tag{ color:var(--torch-glow); text-shadow:2px 2px 0 rgba(0,0,0,0.6); }
+
+  /* ---------------- RESULTS ---------------- */
+  #results{ display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
+  #results-list{ display:flex; flex-direction:column; gap:10px; min-width:320px; }
+  .result-row{
+    display:flex; align-items:center; gap:12px;
+    background:rgba(74,78,105,0.35); border:2px solid var(--stone);
+    border-radius:10px; padding:10px 16px; font-weight:800;
   }
-  .player-card.dead {
-    opacity: 0.3;
-    border-color: var(--coral);
-    text-decoration: line-through;
-  }
-  .player-card.alive { border-color: var(--purple); }
-  .phase-badge {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  .phase-lobby { background: rgba(255,255,255,0.1); }
-  .phase-live { background: var(--purple); }
-  .phase-freeze { background: var(--pink); animation: pulse 0.6s infinite alternate; }
-  @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
-  #winner {
-    font-size: 3rem;
-    margin-top: 30px;
-    background: linear-gradient(90deg, var(--purple), var(--pink), var(--coral));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
+  .result-row .rank{ font-family:'Press Start 2P'; color:var(--torch-glow); width:36px; }
+  .result-row .dot{ width:18px; height:18px; border-radius:50%; }
+  .result-row .name{ flex:1; text-align:left; }
 </style>
 </head>
 <body>
-  <h1>JS JOUST</h1>
-  <div class="phase-badge phase-lobby" id="phaseBadge">LOBBY</div>
-  <div id="roomCode">----</div>
-  <div id="qr"></div>
-  <div id="joinUrl"></div>
+<div id="stage">
 
-  <div>
-    <button id="startBtn">Start Round</button>
-    <button id="freezeBtn" disabled>Trigger Freeze 🎵</button>
-    <button id="unfreezeBtn" disabled>Resume</button>
+  <div id="lobby" class="panel active">
+    <div class="brand-title">SKYJOUST</div>
+    <div id="room-code">----</div>
+    <div id="join-instructions">Grab your phone and join the joust</div>
+    <div id="join-urls">Loading network info…</div>
+    <div id="qr-wrap"><img id="qr-img" alt="QR code to join"></div>
+    <div id="player-grid"></div>
+    <div id="lobby-hint">Waiting for riders to join…</div>
+    <button id="btn-start" class="btn-primary" disabled>START JOUST</button>
   </div>
 
-  <div id="winner"></div>
-  <div id="players"></div>
+  <div id="countdown-wrap" class="panel" style="display:none;">
+    <div id="countdown">3</div>
+  </div>
 
-<script>
-  const socket = io();
-  let roomCode = null;
+  <div id="canvas-wrap" class="panel" style="display:none;">
+    <canvas id="game" width="900" height="560"></canvas>
+    <div id="game-hud">
+      <div id="scoreboard"></div>
+      <div id="bpm-tag">128 BPM</div>
+    </div>
+  </div>
 
-  socket.emit("host:create", ({ roomCode: code }) => {
-    roomCode = code;
-    document.getElementById("roomCode").textContent = code;
-    const url = `${location.origin}/controller.html?room=${code}`;
-    document.getElementById("joinUrl").textContent = url;
-    new QRCode(document.getElementById("qr"), { text: url, width: 200, height: 200 });
-  });
+  <div id="results" class="panel" style="display:none;">
+    <div class="brand-title" style="font-size:26px;">RESULTS</div>
+    <div id="results-list"></div>
+    <button id="btn-again" class="btn-primary">PLAY AGAIN</button>
+  </div>
 
-  document.getElementById("startBtn").onclick = () => {
-    socket.emit("host:startRound");
-    document.getElementById("freezeBtn").disabled = false;
-    document.getElementById("winner").textContent = "";
-  };
-  document.getElementById("freezeBtn").onclick = () => {
-    socket.emit("host:triggerFreeze");
-    document.getElementById("unfreezeBtn").disabled = false;
-  };
-  document.getElementById("unfreezeBtn").onclick = () => {
-    socket.emit("host:endFreeze");
-    document.getElementById("unfreezeBtn").disabled = true;
-  };
-
-  socket.on("game:phase", ({ phase }) => {
-    const badge = document.getElementById("phaseBadge");
-    badge.className = "phase-badge phase-" + phase;
-    badge.textContent = phase.toUpperCase();
-  });
-
-  socket.on("host:playersUpdate", (players) => {
-    const el = document.getElementById("players");
-    el.innerHTML = players.map(p =>
-      `<div class="player-card ${p.alive ? 'alive' : 'dead'}">${p.name}</div>`
-    ).join("");
-  });
-
-  socket.on("host:playerEliminated", ({ name }) => {
-    console.log(name + " eliminated");
-  });
-
-  socket.on("game:winner", ({ name }) => {
-    document.getElementById("winner").textContent = name ? `🏆 ${name} WINS! 🏆` : "No survivors!";
-  });
-</script>
+</div>
+<script src="/host.js"></script>
 </body>
 </html>
