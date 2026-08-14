@@ -16,6 +16,9 @@ npm install
 npx expo start
 ```
 
+Uses Expo SDK 55 (current Expo Go). If install complains about peer
+deps, the project has `.npmrc` with `legacy-peer-deps=true`.
+
 Install **Expo Go** on a phone, then scan the Expo QR (not the game QR).
 Once the app is open, scan the **host screen** QR to join a room.
 
