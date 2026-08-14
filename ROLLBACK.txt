@@ -1,0 +1,55 @@
+ROLLBACK POINTS
+============================================================
+
+If the live app breaks, do not guess. Use one of these tags.
+
+They are on GitHub:
+  https://github.com/molokochris/sound_and_motion
+
+
+------------------------------------------------------------
+last-known-good   (commit 76ec11b)
+------------------------------------------------------------
+
+Use this first.
+
+Sound and Music name, public QR
+(https://sound-and-motion.onrender.com/controller?room=CODE),
+landing page, favicon, match clock, host/player rejoin.
+Phones use buttons. Tilt exists but is optional and can be
+turned off.
+
+Restore main to this tag (creates a new commit, no force-push):
+
+    git checkout main
+    git fetch origin
+    git restore --source last-known-good .
+    git add -A
+    git commit -m "restore last-known-good (76ec11b)"
+    git push origin main
+
+Then Manual Deploy that commit on Render if auto-deploy is off.
+
+
+------------------------------------------------------------
+pre-rewrite   (commit 0d176d8)
+------------------------------------------------------------
+
+What Render was serving before the judge-proof rewrite.
+Old SkyJoust branding. QR may show a private 10.x IP —
+join at https://sound-and-motion.onrender.com/controller
+and type the 4-letter code by hand.
+
+    git restore --source pre-rewrite .
+    git add -A
+    git commit -m "restore pre-rewrite (0d176d8)"
+    git push origin main
+
+
+------------------------------------------------------------
+See the tags
+------------------------------------------------------------
+
+    git fetch origin --tags
+    git log --oneline --decorate -15
+    git show last-known-good --stat
