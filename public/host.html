@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>JS Joust — Host</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --purple: #7C5CFC;
+    --pink: #F0578F;
+    --blue: #3D5AFE;
+    --coral: #FF7A6E;
+    --bg: #0d0b1a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #1a1530, var(--bg));
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  h1 {
+    font-size: 3rem;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0;
+  }
+  #roomCode {
+    font-size: 5rem;
+    letter-spacing: 0.3em;
+    font-weight: 800;
+    margin: 20px 0;
+  }
+  #qr { background: white; padding: 16px; border-radius: 16px; margin-bottom: 30px; }
+  #joinUrl { opacity: 0.6; margin-bottom: 30px; }
+  button {
+    font-size: 1.2rem;
+    padding: 16px 32px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(90deg, var(--purple), var(--blue));
+    color: white;
+    cursor: pointer;
+    margin: 8px;
+    font-weight: 700;
+  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #freezeBtn { background: linear-gradient(90deg, var(--pink), var(--coral)); }
+  #players {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 900px;
+    margin-top: 30px;
+  }
+  .player-card {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .player-card.dead {
+    opacity: 0.3;
+    border-color: var(--coral);
+    text-decoration: line-through;
+  }
+  .player-card.alive { border-color: var(--purple); }
+  .phase-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .phase-lobby { background: rgba(255,255,255,0.1); }
+  .phase-live { background: var(--purple); }
+  .phase-freeze { background: var(--pink); animation: pulse 0.6s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.5; } }
+  #winner {
+    font-size: 3rem;
+    margin-top: 30px;
+    background: linear-gradient(90deg, var(--purple), var(--pink), var(--coral));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+</style>
+</head>
+<body>
+  <h1>JS JOUST</h1>
+  <div class="phase-badge phase-lobby" id="phaseBadge">LOBBY</div>
+  <div id="roomCode">----</div>
+  <div id="qr"></div>
+  <div id="joinUrl"></div>
+
+  <div>
+    <button id="startBtn">Start Round</button>
+    <button id="freezeBtn" disabled>Trigger Freeze 🎵</button>
+    <button id="unfreezeBtn" disabled>Resume</button>
+  </div>
+
+  <div id="winner"></div>
+  <div id="players"></div>
+
+<script>
+  const socket = io();
+  let roomCode = null;
+
+  socket.emit("host:create", ({ roomCode: code }) => {
+    roomCode = code;
+    document.getElementById("roomCode").textContent = code;
+    const url = `${location.origin}/controller.html?room=${code}`;
+    document.getElementById("joinUrl").textContent = url;
+    new QRCode(document.getElementById("qr"), { text: url, width: 200, height: 200 });
+  });
+
+  document.getElementById("startBtn").onclick = () => {
+    socket.emit("host:startRound");
+    document.getElementById("freezeBtn").disabled = false;
+    document.getElementById("winner").textContent = "";
+  };
+  document.getElementById("freezeBtn").onclick = () => {
+    socket.emit("host:triggerFreeze");
+    document.getElementById("unfreezeBtn").disabled = false;
+  };
+  document.getElementById("unfreezeBtn").onclick = () => {
+    socket.emit("host:endFreeze");
+    document.getElementById("unfreezeBtn").disabled = true;
+  };
+
+  socket.on("game:phase", ({ phase }) => {
+    const badge = document.getElementById("phaseBadge");
+    badge.className = "phase-badge phase-" + phase;
+    badge.textContent = phase.toUpperCase();
+  });
+
+  socket.on("host:playersUpdate", (players) => {
+    const el = document.getElementById("players");
+    el.innerHTML = players.map(p =>
+      `<div class="player-card ${p.alive ? 'alive' : 'dead'}">${p.name}</div>`
+    ).join("");
+  });
+
+  socket.on("host:playerEliminated", ({ name }) => {
+    console.log(name + " eliminated");
+  });
+
+  socket.on("game:winner", ({ name }) => {
+    document.getElementById("winner").textContent = name ? `🏆 ${name} WINS! 🏆` : "No survivors!";
+  });
+</script>
+</body>
+</html>
