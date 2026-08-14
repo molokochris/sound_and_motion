@@ -8,4 +8,4 @@
 // Leave empty for local development – the app will fall back to
 // deriving the URL from location.host automatically.
 // -----------------------------------------------------------------------
-window.WS_SERVER_URL = '';
+window.WS_SERVER_URL = 'wss://sound-and-motion.onrender.com/ws';
