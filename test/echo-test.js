@@ -1,5 +1,5 @@
 const http = require('http');
-const { WSServer } = require('../sound_and_motion/lib/miniws');
+const { WSServer } = require('../lib/miniws');
 
 const server = http.createServer((req, res) => { res.end('ok'); });
 const wss = new WSServer();

@@ -45,7 +45,6 @@
   let usingTilt = false;
 
   function wsUrl() {
-    if (window.WS_SERVER_URL) return window.WS_SERVER_URL;
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
     return `${proto}://${location.host}/ws`;
   }
