@@ -114,22 +114,26 @@
     }
   }
 
-  async function loadJoinInfo() {
-    let bases = [location.origin];
-    try {
-      const res = await fetch('/api/info');
-      const info = await res.json();
-      const hostIsLocal = isLocalHostName(location.hostname);
-      if (hostIsLocal && info.lanUrls && info.lanUrls.length) {
-        bases = info.lanUrls;
-      } else if (info.publicOrigin && !isLocalHostName(new URL(info.publicOrigin).hostname)) {
-        bases = [info.publicOrigin];
-      } else {
-        bases = [location.origin];
-      }
-    } catch (_) { /* use location.origin */ }
+  // Always send phones to the public controller page with the room
+  // already in the query string: /controller?room=ABCD
+  // The controller reads that and fills the code field. Never encode a
+  // Render-internal 10.x IP into the QR — phones cannot reach it.
+  const PUBLIC_ORIGIN = 'https://sound-and-motion.onrender.com';
 
-    const joinUrl = `${bases[0]}/controller?room=${roomCode}`;
+  async function loadJoinInfo() {
+    let base = PUBLIC_ORIGIN;
+    if (isLocalHostName(location.hostname)) {
+      try {
+        const res = await fetch('/api/info');
+        const info = await res.json();
+        if (info.lanUrls && info.lanUrls.length) base = info.lanUrls[0];
+        else base = location.origin;
+      } catch (_) {
+        base = location.origin;
+      }
+    }
+
+    const joinUrl = `${base}/controller?room=${encodeURIComponent(roomCode)}`;
     joinUrlsEl.textContent = joinUrl;
     showJoinQr(joinUrl);
   }

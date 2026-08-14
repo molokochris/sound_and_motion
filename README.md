@@ -14,9 +14,10 @@ hosted on Render.
 
 1. Open **https://sound-and-motion.onrender.com** on a laptop (or a TV /
    shared screen). Tap **Host the arena**.
-2. A 4-letter room code and QR appear. Everyone else **scans the QR**,
-   or opens the same site, taps **Join a room**, and types the code + a
-   name.
+2. A 4-letter room code and QR appear. The QR is always
+   `https://sound-and-motion.onrender.com/controller?room=ABCD` — scan it
+   and the room code is already filled in. Or open **Join a room** and
+   type the code + a name.
 3. When names show up on the big screen, hit **START JOUST**.
 4. Last rider standing — or highest score when the 3:00 clock runs out —
    wins.

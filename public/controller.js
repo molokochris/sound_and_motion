@@ -29,13 +29,15 @@
   const endTitle = document.getElementById('end-title');
   const endDetail = document.getElementById('end-detail');
 
-  // prefill room code from ?room= query param (used by QR code join links)
+  // QR / copy-link is always: /controller?room=ABCD
+  // Drop that into the room field so the player only types a name.
   const params = new URLSearchParams(location.search);
   const joinHint = document.getElementById('join-hint');
-  if (params.get('room')) {
-    inputRoom.value = params.get('room').toUpperCase();
-    if (joinHint) joinHint.textContent = 'Room code filled from the QR — just enter your name.';
-    document.title = `SkyJoust — Join ${inputRoom.value}`;
+  const roomFromUrl = (params.get('room') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4);
+  if (roomFromUrl) {
+    inputRoom.value = roomFromUrl;
+    if (joinHint) joinHint.textContent = 'Room code filled from the link — just enter your name.';
+    document.title = `SkyJoust — Join ${roomFromUrl}`;
     setTimeout(() => inputName.focus(), 50);
   }
   try {
