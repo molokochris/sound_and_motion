@@ -32,9 +32,11 @@ const MIME = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json',
+  '.webmanifest': 'application/manifest+json',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.ico': 'image/x-icon',
+  '.webp': 'image/webp',
 };
 
 function isPrivateHost(host) {
@@ -80,12 +82,18 @@ function serveStatic(req, res) {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Not found: ' + urlPath);
+      const notFound = path.join(PUBLIC_DIR, '404.html');
+      fs.readFile(notFound, (err2, page) => {
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff' });
+        res.end(err2 ? 'Not found: ' + urlPath : page);
+      });
       return;
     }
     const ext = path.extname(filePath);
-    const headers = { 'Content-Type': MIME[ext] || 'application/octet-stream' };
+    const headers = {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'X-Content-Type-Options': 'nosniff',
+    };
     if (ext === '.html' || ext === '.js') headers['Cache-Control'] = 'no-cache';
     res.writeHead(200, headers);
     res.end(data);

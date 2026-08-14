@@ -35,8 +35,13 @@
   if (params.get('room')) {
     inputRoom.value = params.get('room').toUpperCase();
     if (joinHint) joinHint.textContent = 'Room code filled from the QR — just enter your name.';
+    document.title = `SkyJoust — Join ${inputRoom.value}`;
     setTimeout(() => inputName.focus(), 50);
   }
+  try {
+    const savedName = localStorage.getItem('skyjoust-name');
+    if (savedName && !inputName.value) inputName.value = savedName;
+  } catch (_) { /* private mode */ }
 
   inputRoom.addEventListener('input', () => {
     inputRoom.value = inputRoom.value.toUpperCase().replace(/[^A-Z]/g, '');
@@ -178,6 +183,7 @@
     btnJoin.disabled = true;
     myRoom = room; myName = name;
     wantsReconnect = true;
+    try { localStorage.setItem('skyjoust-name', name); } catch (_) { /* ignore */ }
 
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       connect();
@@ -190,6 +196,12 @@
       send({ type: 'join', room, name, playerId: myPlayerId });
     }
     setTimeout(() => { btnJoin.disabled = false; }, 1500);
+  });
+
+  [inputRoom, inputName].forEach((el) => {
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btnJoin.click();
+    });
   });
 
   // ---------------- Touch controls ----------------

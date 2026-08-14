@@ -24,6 +24,7 @@
   const countdownEl = document.getElementById('countdown');
   const scoreboardEl = document.getElementById('scoreboard');
   const bpmTagEl = document.getElementById('bpm-tag');
+  const clockEl = document.getElementById('clock');
   const resultsList = document.getElementById('results-list');
   const btnAgain = document.getElementById('btn-again');
 
@@ -71,6 +72,7 @@
       case 'room_created':
         roomCode = msg.room;
         roomCodeEl.textContent = roomCode;
+        document.title = `SkyJoust — ${roomCode}`;
         loadJoinInfo();
         renderLobby();
         break;
@@ -132,19 +134,29 @@
     showJoinQr(joinUrl);
   }
 
+  async function copyText(text, btn, doneLabel) {
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      if (btn) {
+        const prev = btn.textContent;
+        btn.textContent = doneLabel || 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = prev;
+          btn.classList.remove('copied');
+        }, 1600);
+      }
+    } catch (_) { /* ignore */ }
+  }
+
+  roomCodeEl.addEventListener('click', () => {
+    if (roomCode) copyText(roomCode);
+  });
+
   btnCopyLink.addEventListener('click', async () => {
     const url = lastJoinUrl || `${location.origin}/controller?room=${roomCode || ''}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      btnCopyLink.textContent = 'Copied!';
-      btnCopyLink.classList.add('copied');
-      setTimeout(() => {
-        btnCopyLink.textContent = 'Copy join link';
-        btnCopyLink.classList.remove('copied');
-      }, 1600);
-    } catch (_) {
-      joinUrlsEl.textContent = url;
-    }
+    copyText(url, btnCopyLink, 'Copied!');
   });
 
   // ---------------------------------------------------------------------
@@ -690,6 +702,13 @@
 
     updateScoreboard();
     syncPlayerStatuses();
+    if (clockEl) {
+      const t = Math.max(0, Math.ceil(matchTimeLeft));
+      const m = Math.floor(t / 60);
+      const s = t % 60;
+      clockEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+      clockEl.classList.toggle('urgent', t <= 15);
+    }
     draw();
 
     if (checkEndCondition()) { endMatch(); return; }

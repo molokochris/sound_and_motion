@@ -4,6 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SkyJoust — Host Screen</title>
+<meta name="description" content="Host the SkyJoust arena. Players join with their phones.">
+<meta name="theme-color" content="#0B0E23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SkyJoust">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/shared/style.css">
@@ -20,6 +28,7 @@
   #room-code{
     font-family:'Press Start 2P'; font-size:64px; color:var(--torch-glow);
     letter-spacing:14px; text-shadow:4px 4px 0 var(--lava);
+    cursor:pointer;
   }
   #join-instructions{ color:var(--stone-lt); font-weight:600; font-size:15px; }
 
@@ -59,6 +68,8 @@
   .sb-entry .dot{ width:10px; height:10px; border-radius:50%; }
   .sb-entry.dead{ opacity:0.35; text-decoration:line-through; }
   #bpm-tag{ color:var(--torch-glow); text-shadow:2px 2px 0 rgba(0,0,0,0.6); }
+  #clock{ color:var(--parch); text-shadow:2px 2px 0 rgba(0,0,0,0.6); }
+  #clock.urgent{ color:var(--lava); }
 
   /* ---------------- RESULTS ---------------- */
   #results{ display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
@@ -78,7 +89,7 @@
 
   <div id="lobby" class="panel active">
     <div class="brand-title">SKYJOUST</div>
-    <div id="room-code">----</div>
+    <div id="room-code" title="Click to copy the room code">----</div>
     <div id="join-instructions">Scan the QR with your phone — or open the link and type this code</div>
     <div class="join-panel">
       <div id="qr-wrap">
@@ -102,6 +113,7 @@
     <canvas id="game" width="900" height="560"></canvas>
     <div id="game-hud">
       <div id="scoreboard"></div>
+      <div id="clock">3:00</div>
       <div id="bpm-tag">128 BPM</div>
     </div>
   </div>

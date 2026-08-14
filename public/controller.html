@@ -4,6 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>SkyJoust — Controller</title>
+<meta name="description" content="Your phone is the joust. Enter the 4-letter room code to join.">
+<meta name="theme-color" content="#0B0E23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SkyJoust">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/shared/style.css">
@@ -21,7 +31,7 @@
       <input id="input-room" class="code-input" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD" inputmode="text">
 
       <label class="field-label" for="input-name">YOUR NAME</label>
-      <input id="input-name" class="name-input" maxlength="14" autocomplete="off" placeholder="Sir Reginald">
+      <input id="input-name" class="name-input" maxlength="14" autocomplete="nickname" placeholder="Sir Reginald" enterkeyhint="go">
 
       <button id="btn-join" class="btn-primary">JOIN ROOM</button>
       <div id="join-error" class="error-line"></div>
