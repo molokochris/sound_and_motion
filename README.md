@@ -7,6 +7,8 @@ lift, and watch out for "the drop" when gravity spikes.
 
 **Live:** https://sound-and-motion.onrender.com
 
+Team / judge talk track: see `PRESENTATION.txt` in this repo.
+
 Phones do **not** need the same Wi‑Fi. Everything (pages + WebSocket) is
 hosted on Render.
 

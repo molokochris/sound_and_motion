@@ -1,0 +1,282 @@
+SKYJOUST PARTY
+A presentation for the team and judges
+============================================================
+
+Live demo:  https://sound-and-motion.onrender.com
+Repo:       https://github.com/molokochris/sound_and_motion
+
+
+------------------------------------------------------------
+SLIDE 1 — What is SkyJoust?
+------------------------------------------------------------
+
+SkyJoust is a live party game in the same family as Jackbox
+and the arcade classic Joust.
+
+One laptop or TV is the arena everyone watches.
+Everyone else uses their phone as a controller.
+
+You flap a flying rider, joust other people from above,
+and time your flaps to a beat that the game synthesizes
+live — there are no music files.
+
+You do not install an app. You open a website.
+
+
+------------------------------------------------------------
+SLIDE 2 — The pitch in one sentence
+------------------------------------------------------------
+
+One shared screen runs the whole game.
+Phones are just joysticks that buzz on the beat.
+
+
+------------------------------------------------------------
+SLIDE 3 — How you play (the 30-second version)
+------------------------------------------------------------
+
+1. One person opens the site on a laptop and taps
+   "Host the arena".
+2. A 4-letter room code and a QR code appear.
+3. Everyone else scans the QR (or types the code).
+   The room code is already filled in from the link.
+4. When names show up on the big screen, hit START JOUST.
+5. Last rider standing — or highest score when the 3:00
+   clock hits zero — wins.
+
+Multiple hosts can run at the same time.
+Each host gets a different room code. Players who scan
+host A's QR join host A's game, not host B's.
+
+
+------------------------------------------------------------
+SLIDE 4 — What you actually do in a match
+------------------------------------------------------------
+
+On the phone
+  • Tap left / right to move, or tilt the phone.
+  • Tap FLAP to fly.
+  • The phone vibrates on every beat of the music.
+
+On the arena
+  • Strike another rider from ABOVE to unhorse them (+100).
+  • Hitting at the same height just knocks you both back.
+  • Fall in the lava and you lose a life (3 lives).
+  • Flap on the beat for a "perfect flap": more lift and +10.
+  • Every 8 beats "the drop" hits: gravity spikes, screen
+    shakes. That hazard is driven by the music, not a
+    random timer.
+
+
+------------------------------------------------------------
+SLIDE 5 — Why we built it this way (the hard problem)
+------------------------------------------------------------
+
+The naive idea is: every phone runs its own copy of the
+physics, and we try to keep them in sync.
+
+That breaks immediately.
+
+  • Different phones have different clocks.
+  • Wi-Fi and mobile networks add jitter.
+  • If two players flap at "the same time", each device
+    would disagree about who was higher.
+
+So we refused to simulate the game on the phones at all.
+
+
+------------------------------------------------------------
+SLIDE 6 — The architecture (Jackbox model)
+------------------------------------------------------------
+
+    phone  ──┐
+    phone  ──┼──  WebSocket  ──  server  ──  WebSocket  ──  host laptop
+    phone  ──┘     (tiny messages)          (the whole game lives here)
+
+Three pieces:
+
+  1. host.html / host.js
+     The only place physics, collision, scoring, drawing,
+     and music run. It is the single source of truth.
+     It draws everything on a <canvas>.
+
+  2. controller.html / controller.js
+     Intentionally dumb. It only sends:
+       left / right / flap / tilt
+     and receives:
+       you're in, you're alive, your score, BEAT (vibrate).
+
+  3. server.js
+     A relay, not a game engine. It knows about rooms
+     (one host + up to 8 phones) and forwards small JSON
+     messages. It never moves a rider.
+
+The network only carries "flap went down", not "here is
+the entire world state 60 times a second". That is why
+it stays playable on normal Wi-Fi and on mobile data.
+
+
+------------------------------------------------------------
+SLIDE 7 — Why the server has zero npm dependencies
+------------------------------------------------------------
+
+The WebSocket layer is a small hand-written server
+(lib/miniws.js) on top of Node's built-in http module.
+
+That means:
+
+  • `node server.js` is enough to run it.
+  • Nothing to install on a judge laptop if they clone it.
+  • We understand every byte that crosses the wire.
+
+Static pages (landing, host, controller) are served by
+the same process. One URL, one process, one deploy.
+
+
+------------------------------------------------------------
+SLIDE 8 — Why it is on Render, not GitHub Pages
+------------------------------------------------------------
+
+GitHub Pages can only host static files.
+It cannot keep a WebSocket server running.
+
+This game needs a live relay: host tab and phones must
+stay connected to the same process so room codes and
+button presses line up.
+
+So the whole app — pages AND the socket server — lives
+on Render:
+
+    https://sound-and-motion.onrender.com
+
+Phones do not need the same Wi-Fi as the host.
+Anyone with the link can join from anywhere.
+
+Note: the free Render instance sleeps when idle.
+The first open after a break can take ~30 seconds.
+Ping the URL a minute before a demo.
+
+
+------------------------------------------------------------
+SLIDE 9 — How joining actually works
+------------------------------------------------------------
+
+When the host tab connects, the server creates a room
+and a unique 4-letter code (no O or I, so they don't
+look like 0 or 1).
+
+The host screen builds this join link:
+
+    https://sound-and-motion.onrender.com/controller?room=ABCD
+
+That URL is what the QR encodes.
+It is also what "Copy join link" copies.
+
+The controller page reads ?room=ABCD from the address
+bar and drops it into the room-code field. The player
+only types a name.
+
+We do NOT put Render's private container IP (10.x.x.x)
+into the QR. Phones on the internet cannot reach that.
+The QR always uses the public onrender.com domain.
+
+
+------------------------------------------------------------
+SLIDE 10 — Music is a game mechanic, not a soundtrack
+------------------------------------------------------------
+
+There are no MP3s. The host browser builds a kick / hat /
+bass loop with the Web Audio API.
+
+A lookahead scheduler ticks every beat and:
+
+  • plays the hit
+  • flashes the arena
+  • sends { type: "beat" } to every phone so they vibrate
+    in time
+
+Because the host owns both the audio clock and the
+physics, "did you flap on the beat?" is a local check
+on the host (~130ms window). We never try to sync
+music clocks across phones.
+
+As the match goes on, BPM climbs from 128 toward 176.
+The beat window tightens. The drops come faster.
+The music is the difficulty curve.
+
+
+------------------------------------------------------------
+SLIDE 11 — Rooms, reconnects, and many hosts
+------------------------------------------------------------
+
+  • One host tab = one room = one code.
+  • A second person who opens "Host the arena" gets a
+    different room. They do not steal yours.
+  • Up to 8 riders per room.
+  • If a phone drops for a few seconds, it rejoins as
+    the same rider, not a clone.
+  • If the host tab is closed for more than ~12 seconds,
+    the room ends and phones are sent back to the join
+    screen.
+
+Keep the host tab open. That tab IS the game.
+
+
+------------------------------------------------------------
+SLIDE 12 — What we built besides the core loop
+------------------------------------------------------------
+
+  • Landing page so a first-time visitor knows whether
+    to host or join.
+  • QR generated in the browser (no third-party QR API
+    that can fail on school Wi-Fi).
+  • Copy-link and click-to-copy room code, for Zoom /
+    Discord when you cannot scan a screen-share.
+  • Match clock on the host HUD.
+  • Favicon, share image, and a branded 404.
+  • Keep-alive pings so Render does not drop idle
+    lobby sockets while people are still walking in.
+
+
+------------------------------------------------------------
+SLIDE 13 — How to demo it live
+------------------------------------------------------------
+
+Before the room
+  Open https://sound-and-motion.onrender.com once so
+  Render wakes up.
+
+In the room
+  1. Laptop on the projector / shared screen → Host.
+  2. Phones scan the QR.
+  3. START JOUST.
+  4. Call out the beat. Show a perfect flap.
+  5. Show a joust from above.
+  6. Point at the drop when the screen shakes.
+
+If you are fully remote: one person screen-shares the
+host tab. Everyone else is on their phone.
+
+
+------------------------------------------------------------
+SLIDE 14 — What to remember if you only remember three things
+------------------------------------------------------------
+
+  1. Phones are controllers. The laptop is the game.
+     That is why it stays in sync.
+
+  2. One public URL. Scan the QR, code is already there.
+     No app store, no same-Wi-Fi requirement.
+
+  3. The music is the rules. The beat is lift, the drop
+     is a hazard, and the tempo is the difficulty.
+
+
+------------------------------------------------------------
+SLIDE 15 — Thanks / links
+------------------------------------------------------------
+
+Play:   https://sound-and-motion.onrender.com
+Code:   https://github.com/molokochris/sound_and_motion
+
+Open the laptop. Scan the code. Flap on the beat.
