@@ -150,15 +150,20 @@ html,body{
 
 /* ---------------- landing (judges / first open) ---------------- */
 html.landing{
-  height:100%;
-  overflow-y:auto;
-}
-body.landing-body{
   height:auto;
   min-height:100%;
-  min-height:100dvh;
-  overflow-y:auto;
   overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:auto;
+  touch-action:auto;
+}
+body.landing-body{
+  width:100%;
+  height:auto;
+  min-height:100vh;
+  min-height:100dvh;
+  overflow:visible;
+  overscroll-behavior:auto;
   touch-action:auto;
   -webkit-user-select:text; user-select:text;
   display:flex;
