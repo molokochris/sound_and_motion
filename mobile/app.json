@@ -18,7 +18,9 @@
       }
     },
     "android": {
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "CAMERA"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E23"
@@ -33,7 +35,9 @@
         {
           "cameraPermission": "Scan the host QR to join a Sound and Music room."
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ]
   }
 }
