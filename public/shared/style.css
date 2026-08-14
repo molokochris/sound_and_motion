@@ -267,3 +267,58 @@ body.landing-body{
 
 #canvas-wrap{ width:min(100vw - 16px, 900px); }
 #canvas-wrap canvas{ width:100%; height:auto; display:block; }
+
+/* ---------------- Responsive enhancements for small screens ---------------- */
+@media (max-width: 480px) {
+  .landing-body {
+    padding: 20px 12px;
+  }
+  .landing-card {
+    padding: 24px 18px 20px;
+    width: 100%;
+    border-radius: 12px;
+    gap: 8px;
+  }
+  .brand-sub {
+    font-size: 14px;
+  }
+  .how-list {
+    font-size: 13.5px;
+    margin: 8px 0 4px 1em;
+  }
+  .landing-btn {
+    font-size: 11px;
+    padding: 14px 10px;
+    margin-top: 8px;
+  }
+  .btn-download {
+    padding: 12px 14px;
+    margin-top: 10px;
+  }
+  .btn-download-title {
+    font-size: 10px;
+    gap: 6px;
+  }
+  .btn-download-sub {
+    font-size: 10.5px;
+  }
+  .how-play {
+    font-size: 13px;
+  }
+  .how-hint {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .landing-card {
+    padding: 18px 14px;
+  }
+  .brand-title {
+    font-size: 15px;
+  }
+  .btn-download-title {
+    font-size: 9px;
+  }
+}
+
