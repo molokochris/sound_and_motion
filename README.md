@@ -46,6 +46,22 @@ On the arena:
 - Don’t fall in the lava. Each rider has **3 lives**.
 - Every 8 beats, **the drop** spikes gravity for two beats.
 
+## Optional: React Native controller
+
+The laptop host stays in the browser. Phones can use a native app
+instead of `/controller` — same WebSocket, plus a camera QR scanner.
+
+The scanner is its own file: `mobile/src/QrScanner.js`.
+
+```
+cd mobile
+npm install
+npx expo start
+```
+
+Open it in Expo Go, then scan the **host** QR. Judges can still join in
+the browser; this app is extra. Details: `mobile/README.md`.
+
 ## Run it locally
 
 Needs Node 18+. No `npm install` required to play.

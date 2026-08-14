@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Sound and Music",
+    "slug": "sound-and-music-controller",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0B0E23"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Scan the host QR to join a Sound and Music room."
+      }
+    },
+    "android": {
+      "permissions": ["CAMERA"]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Scan the host QR to join a Sound and Music room."
+        }
+      ]
+    ]
+  }
+}

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "tunnel": "concurrently --names \"SERVER,TUNNEL\" --prefix-colors \"cyan,yellow\" \"node server.js\" \"cloudflared tunnel --url http://localhost:3000\"",
-    "test": "node test/echo-test.js && node test/qr-test.js && node test/integration-test.js",
+    "test": "node test/echo-test.js && node test/qr-test.js && node test/parse-join-qr-test.js && node test/integration-test.js",
     "predeploy": "echo Deploying public/ to gh-pages...",
     "deploy": "gh-pages -d public -b gh-pages"
   },
