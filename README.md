@@ -106,9 +106,9 @@ state to begin with.
 
 ## Known limitations / good next steps
 
-- If a phone's WebSocket drops mid-match and reconnects, it rejoins as a
-  *new* player rather than resuming its old one (simplest correct
-  behavior for a v1; a rejoin token would fix this).
+- A phone that drops mid-match and reconnects within a few seconds
+  resumes the same rider. If the host tab is closed for more than ~12
+  seconds, the room ends and everyone must rejoin.
 - The join QR is generated in the browser (no third-party QR API). If a
   camera can't read it, type the 4-letter code at `/controller` instead.
 - Designed for up to 8 riders per room; the canvas layout starts to feel
