@@ -1,10 +1,26 @@
 # SkyJoust Party
 
-A local party game: one big screen (laptop/TV) hosts the arena, and everyone
-else joins with their phone as a controller. Riders flap to fly, joust each
+A party game: one big screen (laptop/TV) hosts the arena, and everyone else
+joins with their phone as a controller. Riders flap to fly, joust each
 other by striking from above, and the whole match is driven by a live,
 procedurally-generated beat — flap in time with the music for a stronger
 lift, and watch out for "the drop" every few bars, when gravity spikes.
+
+## Play it (hosted)
+
+Live: **https://sound-and-motion.onrender.com**
+
+Judges / anyone remote — you do **not** need the same Wi‑Fi.
+
+1. Open that URL on a laptop (or TV / shared screen). Tap **Host the arena**.
+2. Everyone else opens the camera on their phone and **scans the QR**, or
+   opens the same site and taps **Join a room**, then types the 4-letter code
+   plus a name.
+3. When riders appear on the big screen, hit **START JOUST**.
+
+The first load can take ~30 seconds if the free Render instance was asleep —
+wait, then refresh once if you still see `----` instead of a room code.
+Don't close or refresh the host tab mid-match.
 
 No installs beyond Node itself — the WebSocket server is hand-written on
 top of Node's built-in `http` module, so there's nothing to `npm install`.
@@ -25,10 +41,11 @@ You'll see something like:
     http://192.168.1.42:3000/controller
 ```
 
-1. Open the **host** URL on the laptop or TV everyone can see.
-2. Everyone else opens the **controller** URL on their phone (same WiFi
-   network) — or scans the QR code shown on the host screen once a room is
-   created — and types in the 4-letter room code plus their name.
+1. Open the site on the laptop or TV everyone can see and click **Host the
+   arena** (or go straight to `/host`).
+2. Everyone else scans the QR on the host screen — or opens `/controller`
+   and types the 4-letter room code plus their name. Same Wi‑Fi is only
+   required for a local `localhost` run; the hosted game works from anywhere.
 3. Once at least one rider has joined, hit **START JOUST** on the host
    screen. Riders' phones jump to the play screen automatically.
 4. Last rider standing (or highest score when the clock runs out) wins.
@@ -92,8 +109,7 @@ state to begin with.
 - If a phone's WebSocket drops mid-match and reconnects, it rejoins as a
   *new* player rather than resuming its old one (simplest correct
   behavior for a v1; a rejoin token would fix this).
-- The QR code image is fetched from a public QR-generation API, so it
-  needs the host machine to have internet access. Manual entry of the
-  4-letter code always works even fully offline on a LAN.
+- The join QR is generated in the browser (no third-party QR API). If a
+  camera can't read it, type the 4-letter code at `/controller` instead.
 - Designed for up to 8 riders per room; the canvas layout starts to feel
   cramped much beyond that.

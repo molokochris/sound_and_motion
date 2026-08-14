@@ -78,6 +78,7 @@ html,body{
   letter-spacing:1px;
 }
 .btn-primary{ background:var(--torch); color:#1B0E08; border-bottom:4px solid #B8501E; }
+.btn-primary:disabled{ opacity:0.45; cursor:not-allowed; transform:none; }
 .btn-primary:active{ transform:translateY(2px); border-bottom-width:1px; }
 .btn-secondary{ background:transparent; color:var(--torch-glow); border:2px solid var(--torch); font-size:11px; padding:12px; }
 .btn-secondary.on{ background:var(--torch); color:#1B0E08; }
@@ -152,3 +153,71 @@ html,body{
   text-align:center; font-weight:800; font-size:13px;
   padding:8px; z-index:50;
 }
+
+/* ---------------- landing (judges / first open) ---------------- */
+html.landing, body.landing-body{
+  overflow:auto;
+  touch-action:auto;
+  -webkit-user-select:text; user-select:text;
+}
+.landing-body{
+  display:flex; align-items:center; justify-content:center;
+  min-height:100%;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(230,57,70,0.18), transparent 60%),
+    linear-gradient(180deg, var(--night) 0%, var(--dusk) 80%);
+  padding:28px 16px;
+}
+.landing-card{
+  width:min(92vw, 520px);
+  background:rgba(27,31,59,0.78);
+  border:2px solid var(--stone);
+  border-radius:14px;
+  padding:32px 26px 28px;
+  display:flex; flex-direction:column; align-items:stretch; gap:10px;
+}
+.how-list{
+  margin:12px 0 6px 1.2em;
+  color:var(--parch);
+  font-weight:600;
+  font-size:15px;
+  line-height:1.55;
+}
+.how-list li{ margin:8px 0; }
+.how-list em{ color:var(--torch-glow); font-style:normal; }
+.landing-btn{
+  display:block; text-align:center; text-decoration:none;
+  margin-top:10px;
+}
+.how-hint{ color:var(--stone-lt); font-size:13px; text-align:center; margin-top:8px; }
+.how-play{
+  margin-top:10px;
+  padding-top:12px;
+  border-top:1px solid var(--stone);
+  color:var(--stone-lt);
+  font-size:14px;
+  line-height:1.5;
+}
+.how-play p{ margin-top:6px; }
+.how-play strong{ color:var(--torch-glow); }
+
+/* host lobby extras */
+.join-panel{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+#join-urls{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  font-weight:700;
+  color:var(--parch);
+  word-break:break-all;
+  max-width:min(92vw, 560px);
+}
+#qr-wrap{ background:#fff; padding:12px; border-radius:10px; display:none; }
+#qr-wrap.show{ display:block; }
+#qr-canvas{ display:block; width:180px; height:180px; }
+.qr-caption{ font-family:'Press Start 2P'; font-size:8px; color:#1B0E08; text-align:center; margin-top:8px; letter-spacing:1px; }
+.how-mini{ color:var(--stone-lt); font-size:13px; max-width:520px; line-height:1.45; }
+#btn-copy-link{ margin-top:4px; }
+#btn-copy-link.copied{ border-color:var(--ok); color:var(--ok); }
+
+#canvas-wrap{ width:min(100vw - 16px, 900px); }
+#canvas-wrap canvas{ width:100%; height:auto; display:block; }

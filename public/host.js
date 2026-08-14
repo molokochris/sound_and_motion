@@ -16,10 +16,11 @@
   const roomCodeEl = document.getElementById('room-code');
   const joinUrlsEl = document.getElementById('join-urls');
   const qrWrap = document.getElementById('qr-wrap');
-  const qrImg = document.getElementById('qr-img');
+  const qrCanvas = document.getElementById('qr-canvas');
   const playerGrid = document.getElementById('player-grid');
   const lobbyHint = document.getElementById('lobby-hint');
   const btnStart = document.getElementById('btn-start');
+  const btnCopyLink = document.getElementById('btn-copy-link');
   const countdownEl = document.getElementById('countdown');
   const scoreboardEl = document.getElementById('scoreboard');
   const bpmTagEl = document.getElementById('bpm-tag');
@@ -38,15 +39,27 @@
     return `${proto}://${location.host}/ws`;
   }
 
+  let keepaliveTimer = null;
+  function startKeepalive() {
+    if (keepaliveTimer) clearInterval(keepaliveTimer);
+    // Render (and most proxies) drop idle WebSockets after a few minutes.
+    keepaliveTimer = setInterval(() => send({ type: 'ping', t: Date.now() }), 20000);
+  }
+
   function connect() {
     ws = new WebSocket(wsUrl());
-    ws.addEventListener('open', () => send({ type: 'host_create' }));
+    ws.addEventListener('open', () => {
+      startKeepalive();
+      if (roomCode) send({ type: 'host_rejoin', room: roomCode });
+      else send({ type: 'host_create' });
+    });
     ws.addEventListener('message', (ev) => {
       let msg;
       try { msg = JSON.parse(ev.data); } catch (_) { return; }
       handleMessage(msg);
     });
     ws.addEventListener('close', () => {
+      if (keepaliveTimer) { clearInterval(keepaliveTimer); keepaliveTimer = null; }
       lobbyHint.textContent = 'Connection lost. Reconnecting…';
       setTimeout(connect, 1500);
     });
@@ -59,6 +72,7 @@
         roomCode = msg.room;
         roomCodeEl.textContent = roomCode;
         loadJoinInfo();
+        renderLobby();
         break;
 
       case 'player_joined':
@@ -78,20 +92,60 @@
     }
   }
 
+  let lastJoinUrl = '';
+
+  function isLocalHostName(hostname) {
+    return hostname === 'localhost'
+      || hostname === '127.0.0.1'
+      || /^\d+\.\d+\.\d+\.\d+$/.test(hostname);
+  }
+
+  function showJoinQr(joinUrl) {
+    lastJoinUrl = joinUrl;
+    qrWrap.classList.remove('show');
+    if (window.SkyQR && qrCanvas) {
+      try {
+        SkyQR.draw(qrCanvas, joinUrl, { size: 180 });
+        qrWrap.classList.add('show');
+        return;
+      } catch (_) { /* fall through to typed URL */ }
+    }
+  }
+
   async function loadJoinInfo() {
+    let bases = [location.origin];
     try {
       const res = await fetch('/api/info');
       const info = await res.json();
-      const urls = (info.lanUrls && info.lanUrls.length) ? info.lanUrls : [location.origin];
-      const joinUrl = `${urls[0]}/controller?room=${roomCode}`;
-      joinUrlsEl.textContent = urls.map(u => `${u}/controller`).join('  •  ');
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(joinUrl)}`;
-      qrImg.onload = () => qrWrap.classList.add('show');
-      qrImg.onerror = () => qrWrap.classList.remove('show');
-    } catch (_) {
-      joinUrlsEl.textContent = `${location.origin}/controller`;
-    }
+      const hostIsLocal = isLocalHostName(location.hostname);
+      if (hostIsLocal && info.lanUrls && info.lanUrls.length) {
+        bases = info.lanUrls;
+      } else if (info.publicOrigin && !isLocalHostName(new URL(info.publicOrigin).hostname)) {
+        bases = [info.publicOrigin];
+      } else {
+        bases = [location.origin];
+      }
+    } catch (_) { /* use location.origin */ }
+
+    const joinUrl = `${bases[0]}/controller?room=${roomCode}`;
+    joinUrlsEl.textContent = joinUrl;
+    showJoinQr(joinUrl);
   }
+
+  btnCopyLink.addEventListener('click', async () => {
+    const url = lastJoinUrl || `${location.origin}/controller?room=${roomCode || ''}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      btnCopyLink.textContent = 'Copied!';
+      btnCopyLink.classList.add('copied');
+      setTimeout(() => {
+        btnCopyLink.textContent = 'Copy join link';
+        btnCopyLink.classList.remove('copied');
+      }, 1600);
+    } catch (_) {
+      joinUrlsEl.textContent = url;
+    }
+  });
 
   // ---------------------------------------------------------------------
   // Lobby: player roster

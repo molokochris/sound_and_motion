@@ -31,7 +31,12 @@
 
   // prefill room code from ?room= query param (used by QR code join links)
   const params = new URLSearchParams(location.search);
-  if (params.get('room')) inputRoom.value = params.get('room').toUpperCase();
+  const joinHint = document.getElementById('join-hint');
+  if (params.get('room')) {
+    inputRoom.value = params.get('room').toUpperCase();
+    if (joinHint) joinHint.textContent = 'Room code filled from the QR — just enter your name.';
+    setTimeout(() => inputName.focus(), 50);
+  }
 
   inputRoom.addEventListener('input', () => {
     inputRoom.value = inputRoom.value.toUpperCase().replace(/[^A-Z]/g, '');
@@ -49,13 +54,20 @@
     return `${proto}://${location.host}/ws`;
   }
 
+  let keepaliveTimer = null;
+  function startKeepalive() {
+    if (keepaliveTimer) clearInterval(keepaliveTimer);
+    keepaliveTimer = setInterval(() => send({ type: 'ping', t: Date.now() }), 20000);
+  }
+
   function connect() {
     ws = new WebSocket(wsUrl());
 
     ws.addEventListener('open', () => {
       connBanner.classList.add('hidden');
+      startKeepalive();
       if (wantsReconnect && myRoom && myName) {
-        send({ type: 'join', room: myRoom, name: myName });
+        send({ type: 'join', room: myRoom, name: myName, playerId: myPlayerId });
       }
     });
 
@@ -66,6 +78,7 @@
     });
 
     ws.addEventListener('close', () => {
+      if (keepaliveTimer) { clearInterval(keepaliveTimer); keepaliveTimer = null; }
       if (wantsReconnect) {
         connBanner.classList.remove('hidden');
         setTimeout(connect, 1200);
@@ -87,7 +100,10 @@
         myAvatar.style.background = myColor;
         myAvatar.style.color = myColor;
         waitingName.textContent = `You're in as ${myName}`;
-        showScreen('waiting');
+        if (msg.inProgress) showScreen('play');
+        else if (!screens.play.classList.contains('active') && !screens.end.classList.contains('active')) {
+          showScreen('waiting');
+        }
         break;
 
       case 'join_error':
@@ -166,12 +182,12 @@
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       connect();
       const trySend = () => {
-        if (ws.readyState === WebSocket.OPEN) send({ type: 'join', room, name });
+        if (ws.readyState === WebSocket.OPEN) send({ type: 'join', room, name, playerId: myPlayerId });
         else setTimeout(trySend, 100);
       };
       trySend();
     } else {
-      send({ type: 'join', room, name });
+      send({ type: 'join', room, name, playerId: myPlayerId });
     }
     setTimeout(() => { btnJoin.disabled = false; }, 1500);
   });

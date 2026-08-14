@@ -13,18 +13,15 @@
 
   /* ---------------- LOBBY ---------------- */
   #lobby{
-    display:flex; flex-direction:column; align-items:center; gap:22px;
-    text-align:center; padding:30px;
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    text-align:center; padding:24px 20px;
+    max-height:100%; overflow:auto; touch-action:auto;
   }
   #room-code{
     font-family:'Press Start 2P'; font-size:64px; color:var(--torch-glow);
     letter-spacing:14px; text-shadow:4px 4px 0 var(--lava);
   }
   #join-instructions{ color:var(--stone-lt); font-weight:600; font-size:15px; }
-  #join-urls{ font-family:'Press Start 2P'; font-size:13px; color:var(--parch); line-height:2; }
-  #qr-wrap{ background:#fff; padding:10px; border-radius:10px; display:none; }
-  #qr-wrap.show{ display:block; }
-  #qr-img{ width:150px; height:150px; display:block; }
 
   #player-grid{
     display:flex; flex-wrap:wrap; gap:14px; justify-content:center; max-width:800px; min-height:70px;
@@ -82,12 +79,19 @@
   <div id="lobby" class="panel active">
     <div class="brand-title">SKYJOUST</div>
     <div id="room-code">----</div>
-    <div id="join-instructions">Grab your phone and join the joust</div>
-    <div id="join-urls">Loading network info…</div>
-    <div id="qr-wrap"><img id="qr-img" alt="QR code to join"></div>
+    <div id="join-instructions">Scan the QR with your phone — or open the link and type this code</div>
+    <div class="join-panel">
+      <div id="qr-wrap">
+        <canvas id="qr-canvas" width="180" height="180" aria-label="QR code to join"></canvas>
+        <div class="qr-caption">Scan to join</div>
+      </div>
+      <div id="join-urls">Connecting…</div>
+      <button id="btn-copy-link" class="btn-secondary" type="button">Copy join link</button>
+    </div>
     <div id="player-grid"></div>
     <div id="lobby-hint">Waiting for riders to join…</div>
     <button id="btn-start" class="btn-primary" disabled>START JOUST</button>
+    <p class="how-mini">Need 1+ phones. Left / right to move, FLAP to fly, hit others from above. Last rider standing wins.</p>
   </div>
 
   <div id="countdown-wrap" class="panel" style="display:none;">
@@ -109,6 +113,7 @@
   </div>
 
 </div>
+<script src="/shared/qr.js"></script>
 <script src="/host.js"></script>
 </body>
 </html>
