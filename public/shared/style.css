@@ -149,20 +149,29 @@ html,body{
 }
 
 /* ---------------- landing (judges / first open) ---------------- */
-html.landing, body.landing-body{
-  overflow:auto;
+html.landing{
+  height:100%;
+  overflow-y:auto;
+}
+body.landing-body{
+  height:auto;
+  min-height:100%;
+  min-height:100dvh;
+  overflow-y:auto;
+  overflow-x:hidden;
   touch-action:auto;
   -webkit-user-select:text; user-select:text;
-}
-.landing-body{
-  display:flex; align-items:center; justify-content:center;
-  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
   background:
     radial-gradient(ellipse at 50% 100%, rgba(230,57,70,0.18), transparent 60%),
     linear-gradient(180deg, var(--night) 0%, var(--dusk) 80%);
-  padding:28px 16px;
+  padding:32px 16px;
 }
 .landing-card{
+  margin:auto 0;
   width:min(92vw, 520px);
   background:rgba(27,31,59,0.78);
   border:2px solid var(--stone);
