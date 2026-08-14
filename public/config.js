@@ -1,5 +1,5 @@
 // -----------------------------------------------------------------------
-// SkyJoust – deployment config
+// Sound and Music – deployment config
 //
 // Set WS_SERVER_URL to your live server's WebSocket endpoint before
 // running `npm run deploy`, e.g.:

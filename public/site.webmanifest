@@ -1,6 +1,6 @@
 {
-  "name": "SkyJoust Party",
-  "short_name": "SkyJoust",
+  "name": "Sound and Music",
+  "short_name": "Sound & Music",
   "description": "One big screen hosts the arena. Everyone else's phone is a controller.",
   "start_url": "/",
   "scope": "/",

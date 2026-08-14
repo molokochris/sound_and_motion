@@ -21,11 +21,12 @@ html,body{
 }
 .brand-title{
   font-family:'Press Start 2P', monospace;
-  font-size:30px;
+  font-size:clamp(16px, 4.2vw, 26px);
   color:var(--torch-glow);
   text-shadow:3px 3px 0 var(--lava);
-  letter-spacing:2px;
+  letter-spacing:1px;
   text-align:center;
+  line-height:1.35;
 }
 .brand-sub{ font-weight:800; font-size:16px; color:var(--parch); text-align:center; margin-top:6px; }
 

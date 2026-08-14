@@ -72,7 +72,7 @@
       case 'room_created':
         roomCode = msg.room;
         roomCodeEl.textContent = roomCode;
-        document.title = `SkyJoust — ${roomCode}`;
+        document.title = `Sound and Music — ${roomCode}`;
         loadJoinInfo();
         renderLobby();
         break;

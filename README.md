@@ -1,4 +1,4 @@
-# SkyJoust Party
+# Sound and Music
 
 A Jackbox-style party joust. One laptop or TV is the arena. Everyone else
 joins on their phone as a controller. Riders flap to fly, strike from
@@ -60,7 +60,7 @@ Then open http://localhost:3000 — landing page with **Host the arena**
 and **Join a room**.
 
 ```
-  SkyJoust Party server running
+  Sound and Music server running
   --------------------------------
   Open this on any device:          http://localhost:3000/
   Host screen (laptop/TV):          http://localhost:3000/host

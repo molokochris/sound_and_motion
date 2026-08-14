@@ -37,11 +37,11 @@
   if (roomFromUrl) {
     inputRoom.value = roomFromUrl;
     if (joinHint) joinHint.textContent = 'Room code filled from the link — just enter your name.';
-    document.title = `SkyJoust — Join ${roomFromUrl}`;
+    document.title = `Sound and Music — Join ${roomFromUrl}`;
     setTimeout(() => inputName.focus(), 50);
   }
   try {
-    const savedName = localStorage.getItem('skyjoust-name');
+    const savedName = localStorage.getItem('sound-and-music-name');
     if (savedName && !inputName.value) inputName.value = savedName;
   } catch (_) { /* private mode */ }
 
@@ -185,7 +185,7 @@
     btnJoin.disabled = true;
     myRoom = room; myName = name;
     wantsReconnect = true;
-    try { localStorage.setItem('skyjoust-name', name); } catch (_) { /* ignore */ }
+    try { localStorage.setItem('sound-and-music-name', name); } catch (_) { /* ignore */ }
 
     if (!ws || ws.readyState !== WebSocket.OPEN) {
       connect();

@@ -39,14 +39,14 @@ async function main() {
   check('controller page 200', controllerPageRes.status === 200);
   const notFoundRes = await fetch(`http://localhost:${PORT}/nope.html`);
   check('missing file 404', notFoundRes.status === 404);
-  check('missing file serves branded 404', (await notFoundRes.text()).includes('Back to SkyJoust'));
+  check('missing file serves branded 404', (await notFoundRes.text()).includes('Back to Sound and Music'));
 
   const faviconRes = await fetch(`http://localhost:${PORT}/favicon.ico`);
   check('favicon.ico 200', faviconRes.status === 200);
   const ogRes = await fetch(`http://localhost:${PORT}/og-image.png`);
   check('og-image 200', ogRes.status === 200);
   const manifestRes = await fetch(`http://localhost:${PORT}/site.webmanifest`);
-  check('web manifest 200', manifestRes.status === 200 && (await manifestRes.json()).short_name === 'SkyJoust');
+  check('web manifest 200', manifestRes.status === 200 && (await manifestRes.json()).short_name === 'Sound & Music');
 
   const cloudInfoRes = await fetch(`http://localhost:${PORT}/api/info`, {
     headers: { 'x-forwarded-host': 'sound-and-motion.onrender.com', 'x-forwarded-proto': 'https' },

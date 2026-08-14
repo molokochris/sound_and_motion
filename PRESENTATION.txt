@@ -1,4 +1,4 @@
-SKYJOUST PARTY
+SOUND AND MUSIC
 A presentation for the team and judges
 ============================================================
 
@@ -7,10 +7,10 @@ Repo:       https://github.com/molokochris/sound_and_motion
 
 
 ------------------------------------------------------------
-SLIDE 1 — What is SkyJoust?
+SLIDE 1 — What is Sound and Music?
 ------------------------------------------------------------
 
-SkyJoust is a live party game in the same family as Jackbox
+Sound and Music is a live party game in the same family as Jackbox
 and the arcade classic Joust.
 
 One laptop or TV is the arena everyone watches.

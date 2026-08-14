@@ -1,7 +1,7 @@
 {
-  "name": "skyjoust-party",
+  "name": "sound-and-music",
   "version": "1.0.0",
-  "description": "Phones-as-controllers party joust game with music-driven mechanics, real-time WebSocket relay.",
+  "description": "Sound and Music — phones-as-controllers party joust with a live synthesized beat.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

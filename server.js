@@ -1,4 +1,4 @@
-// SkyJoust Party — server.js
+// Sound and Music — server.js
 // Zero external dependencies. Serves the host/controller pages and relays
 // real-time messages between one "host" (the big screen) and many phone
 // "controllers" over WebSockets.
@@ -341,7 +341,7 @@ function getLanAddresses() {
 
 server.listen(PORT, () => {
   console.log('');
-  console.log('  SkyJoust Party server running');
+  console.log('  Sound and Music server running');
   console.log('  --------------------------------');
   console.log(`  Open this on any device:          http://localhost:${PORT}/`);
   console.log(`  Host screen (laptop/TV):          http://localhost:${PORT}/host`);
