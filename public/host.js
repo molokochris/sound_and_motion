@@ -226,7 +226,7 @@
       facing: 1, wingPhase: Math.random()*Math.PI*2,
       alive: true, eliminated: false, lives: START_LIVES,
       score: 0, invuln: 60, respawnTimer: 0,
-      controls: { left: false, right: false, tilt: 0, flapHeld: false, flapQueued: false },
+      controls: { left: false, right: false, tilt: 0, useTilt: false, flapHeld: false, flapQueued: false },
       lastSentAlive: true, lastSentScore: -1,
     };
   }
@@ -236,7 +236,14 @@
     if (!p) return;
     if (action === 'left') p.controls.left = !!value;
     else if (action === 'right') p.controls.right = !!value;
-    else if (action === 'tilt') p.controls.tilt = typeof value === 'number' ? value : 0;
+    else if (action === 'tilt_mode') {
+      p.controls.useTilt = !!value;
+      if (!value) { p.controls.tilt = 0; p.controls.left = false; p.controls.right = false; }
+    }
+    else if (action === 'tilt') {
+      p.controls.tilt = typeof value === 'number' ? value : 0;
+      if (typeof value === 'number') p.controls.useTilt = true;
+    }
     else if (action === 'flap') {
       const held = !!value;
       if (held && !p.controls.flapHeld) p.controls.flapQueued = true;
@@ -379,7 +386,7 @@
     if (!p.alive) return;
 
     const c = p.controls;
-    if (Math.abs(c.tilt) > 0.05) {
+    if (c.useTilt && Math.abs(c.tilt) > 0.05) {
       p.vx += c.tilt * MOVE_ACCEL * 1.6;
       p.facing = c.tilt >= 0 ? 1 : -1;
     } else {
