@@ -5,6 +5,8 @@ This app only replaces the phone page: scan the host QR, type a name,
 then left / right / FLAP.
 
 The scanner lives in its own file: `src/QrScanner.js`.
+The app icon is the same bird-rider mark as the website favicon
+(`assets/icon.png`, copied from `public/icon-512.png`).
 
 ## Run it
 
