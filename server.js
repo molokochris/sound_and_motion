@@ -37,6 +37,7 @@ const MIME = {
   '.png': 'image/png',
   '.ico': 'image/x-icon',
   '.webp': 'image/webp',
+  '.apk': 'application/vnd.android.package-archive',
 };
 
 function isPrivateHost(host) {
@@ -74,14 +75,38 @@ function serveStatic(req, res) {
   if (urlPath === '/controller') urlPath = '/controller.html';
   if (urlPath === '/host') urlPath = '/host.html';
 
+  if (urlPath === '/download' || urlPath === '/download-apk' || urlPath === '/app.apk' || urlPath === '/sound-and-music.apk') {
+    const rootApk = path.join(__dirname, 'sound-and-music.apk');
+    const publicApk = path.join(PUBLIC_DIR, 'sound-and-music.apk');
+    const targetApk = fs.existsSync(publicApk) ? publicApk : (fs.existsSync(rootApk) ? rootApk : null);
+
+    if (targetApk) {
+      fs.stat(targetApk, (err, stats) => {
+        if (err || !stats.isFile()) {
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('APK not found');
+          return;
+        }
+        res.writeHead(200, {
+          'Content-Type': 'application/vnd.android.package-archive',
+          'Content-Length': stats.size,
+          'Content-Disposition': 'attachment; filename="sound-and-music.apk"',
+          'X-Content-Type-Options': 'nosniff',
+        });
+        fs.createReadStream(targetApk).pipe(res);
+      });
+      return;
+    }
+  }
+
   const filePath = path.join(PUBLIC_DIR, urlPath);
   // prevent path traversal
   if (!filePath.startsWith(PUBLIC_DIR)) {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
-  fs.readFile(filePath, (err, data) => {
-    if (err) {
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
       const notFound = path.join(PUBLIC_DIR, '404.html');
       fs.readFile(notFound, (err2, page) => {
         res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff' });
@@ -89,14 +114,20 @@ function serveStatic(req, res) {
       });
       return;
     }
+
     const ext = path.extname(filePath);
     const headers = {
       'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Content-Length': stats.size,
       'X-Content-Type-Options': 'nosniff',
     };
     if (ext === '.html' || ext === '.js') headers['Cache-Control'] = 'no-cache';
+    if (ext === '.apk') {
+      headers['Content-Disposition'] = 'attachment; filename="sound-and-music.apk"';
+    }
+
     res.writeHead(200, headers);
-    res.end(data);
+    fs.createReadStream(filePath).pipe(res);
   });
 }
 
