@@ -54,7 +54,7 @@ SLIDE 4 — What you actually do in a match
 ------------------------------------------------------------
 
 On the phone
-  • Tap left / right to move, or tilt the phone.
+  • Tap left / right to move.
   • Tap FLAP to fly.
   • The phone vibrates on every beat of the music.
 
@@ -102,7 +102,7 @@ Three pieces:
 
   2. controller.html / controller.js
      Intentionally dumb. It only sends:
-       left / right / flap / tilt
+       left / right / flap
      and receives:
        you're in, you're alive, your score, BEAT (vibrate).
 

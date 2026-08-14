@@ -286,7 +286,7 @@ wss.on('connection', (conn) => {
       case 'input': {
         const room = rooms.get(roomCode);
         if (!room || role !== 'player') return;
-        // action: 'left' | 'right' | 'flap' | 'tilt'   value: boolean or number
+        // action: 'left' | 'right' | 'flap'   value: boolean
         sendToHost(room, { type: 'input', playerId, action: msg.action, value: msg.value });
         break;
       }

@@ -16,16 +16,11 @@
   const joinError = document.getElementById('join-error');
   const myAvatar = document.getElementById('my-avatar');
   const waitingName = document.getElementById('waiting-name');
-  const btnMotion = document.getElementById('btn-motion');
-  const btnMotionPlay = document.getElementById('btn-motion-play');
-  const tiltStatus = document.getElementById('tilt-status');
-  const tiltFail = document.getElementById('tilt-fail');
   const connBanner = document.getElementById('conn-banner');
 
   const zoneLeft = document.getElementById('zone-left');
   const zoneRight = document.getElementById('zone-right');
   const zoneFlap = document.getElementById('zone-flap');
-  const tiltIndicator = document.getElementById('tilt-indicator');
   const beatPulse = document.getElementById('beat-pulse');
   const playStatus = document.getElementById('play-status');
   const playScore = document.getElementById('play-score');
@@ -57,7 +52,6 @@
   let myColor = '#4ECDC4';
   let myRoom = null, myName = null, myPlayerId = null;
   let wantsReconnect = false;
-  let usingTilt = false;
 
   function wsUrl() {
     const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -126,7 +120,6 @@
         playStatus.classList.remove('dead');
         playScore.textContent = '0';
         showScreen('play');
-        applyTiltUi();
         break;
 
       case 'status':
@@ -227,118 +220,6 @@
   bindZone(zoneLeft, 'left');
   bindZone(zoneRight, 'right');
   bindZone(zoneFlap, 'flap');
-
-  // ---------------- Tilt controls (optional; buttons always available) ----------------
-  let tiltEventCount = 0;
-  let tiltWatchdog = null;
-  let lastTiltSent = 0;
-
-  function setTiltHint(msg) {
-    if (tiltStatus) tiltStatus.textContent = msg;
-    if (tiltFail) {
-      if (msg && usingTilt === false && /no tilt|denied|could not|use the buttons/i.test(msg)) {
-        tiltFail.textContent = msg;
-        tiltFail.classList.remove('hidden');
-        setTimeout(() => tiltFail.classList.add('hidden'), 3200);
-      }
-    }
-  }
-
-  function applyTiltUi() {
-    btnMotion.classList.toggle('on', usingTilt);
-    btnMotion.textContent = usingTilt ? 'SWITCH TO BUTTONS' : 'ENABLE TILT';
-    if (btnMotionPlay) {
-      btnMotionPlay.classList.toggle('on', usingTilt);
-      btnMotionPlay.textContent = usingTilt ? 'BUTTONS' : 'TILT';
-    }
-    zoneLeft.classList.toggle('hidden', usingTilt);
-    zoneRight.classList.toggle('hidden', usingTilt);
-    tiltIndicator.classList.toggle('hidden', !usingTilt);
-  }
-
-  function setTiltMode(on, hint) {
-    usingTilt = !!on;
-    applyTiltUi();
-    send({ type: 'input', action: 'tilt_mode', value: usingTilt });
-    if (!usingTilt) {
-      send({ type: 'input', action: 'tilt', value: 0 });
-      send({ type: 'input', action: 'left', value: false });
-      send({ type: 'input', action: 'right', value: false });
-    }
-    if (hint) setTiltHint(hint);
-    else if (usingTilt) setTiltHint('Tilt the phone left and right. Tap BUTTONS anytime to go back.');
-    else setTiltHint('Buttons work anytime. Tilt is optional — you can switch back if it fails.');
-  }
-
-  function screenAngle() {
-    try {
-      if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
-    } catch (_) { /* ignore */ }
-    return typeof window.orientation === 'number' ? window.orientation : 0;
-  }
-
-  function tiltFromEvent(e) {
-    const gamma = typeof e.gamma === 'number' ? e.gamma : null;
-    const beta = typeof e.beta === 'number' ? e.beta : null;
-    if (gamma == null && beta == null) return null;
-    const angle = screenAngle();
-    let deg;
-    if (angle === 90) deg = beta != null ? beta : gamma;
-    else if (angle === -90 || angle === 270) deg = beta != null ? -beta : (gamma != null ? -gamma : null);
-    else deg = gamma != null ? gamma : beta;
-    if (deg == null || Number.isNaN(deg)) return null;
-    return Math.max(-1, Math.min(1, deg / 35));
-  }
-
-  function onOrientation(e) {
-    const norm = tiltFromEvent(e);
-    if (norm == null) return;
-    tiltEventCount += 1;
-    if (!usingTilt) return;
-    const now = performance.now();
-    if (now - lastTiltSent < 40) return;
-    lastTiltSent = now;
-    send({ type: 'input', action: 'tilt', value: norm });
-    tiltIndicator.style.left = `calc(50% + ${norm * 45}%)`;
-  }
-
-  window.addEventListener('deviceorientation', onOrientation);
-  window.addEventListener('deviceorientationabsolute', onOrientation);
-
-  async function enableTilt() {
-    if (typeof DeviceOrientationEvent === 'undefined') {
-      setTiltMode(false, 'This phone has no tilt sensor. Use the buttons.');
-      return;
-    }
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      try {
-        const res = await DeviceOrientationEvent.requestPermission();
-        if (res !== 'granted') {
-          setTiltMode(false, 'Motion permission denied. Use the buttons.');
-          return;
-        }
-      } catch (_) {
-        setTiltMode(false, 'Could not enable tilt. Use the buttons.');
-        return;
-      }
-    }
-    const before = tiltEventCount;
-    setTiltMode(true);
-    if (tiltWatchdog) clearTimeout(tiltWatchdog);
-    tiltWatchdog = setTimeout(() => {
-      if (usingTilt && tiltEventCount === before) {
-        setTiltMode(false, 'No tilt data from this phone. Use the buttons.');
-      }
-    }, 2000);
-  }
-
-  function toggleTilt() {
-    if (usingTilt) setTiltMode(false, 'Back to buttons.');
-    else enableTilt();
-  }
-
-  btnMotion.addEventListener('click', toggleTilt);
-  if (btnMotionPlay) btnMotionPlay.addEventListener('click', toggleTilt);
 
   // don't let the page sleep mid-game if possible
   let wakeLock = null;

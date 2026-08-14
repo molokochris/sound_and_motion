@@ -37,8 +37,6 @@ QR off a screen-share, tap **Copy join link** or type the 4-letter code.
 On the phone:
 
 - Tap left / right to move, tap **FLAP** to fly.
-- Optional: **Enable Tilt Controls** to steer by tilting (iOS asks once
-  for motion permission).
 - The phone buzzes on every beat. Flap on that buzz for a stronger
   "perfect flap" (+10).
 
@@ -93,7 +91,7 @@ npm test
 | `public/shared/qr.js` | Join QR generated in the browser (no third-party API) |
 
 The host is the single source of truth — same model as Jackbox. Phones
-only send `left` / `right` / `flap` / `tilt`. A phone can drop and
+only send `left` / `right` / `flap`. A phone can drop and
 rejoin as the same rider. If the host tab is gone for more than ~12
 seconds, the room closes.
 
