@@ -1,115 +1,117 @@
 # SkyJoust Party
 
-A party game: one big screen (laptop/TV) hosts the arena, and everyone else
-joins with their phone as a controller. Riders flap to fly, joust each
-other by striking from above, and the whole match is driven by a live,
-procedurally-generated beat — flap in time with the music for a stronger
-lift, and watch out for "the drop" every few bars, when gravity spikes.
+A Jackbox-style party joust. One laptop or TV is the arena. Everyone else
+joins on their phone as a controller. Riders flap to fly, strike from
+above, and ride a live synthesized beat — flap on the pulse for extra
+lift, and watch out for "the drop" when gravity spikes.
 
-## Play it (hosted)
+**Live:** https://sound-and-motion.onrender.com
 
-Live: **https://sound-and-motion.onrender.com**
+Phones do **not** need the same Wi‑Fi. Everything (pages + WebSocket) is
+hosted on Render.
 
-Judges / anyone remote — you do **not** need the same Wi‑Fi.
+## Play (for judges and teammates)
 
-1. Open that URL on a laptop (or TV / shared screen). Tap **Host the arena**.
-2. Everyone else opens the camera on their phone and **scans the QR**, or
-   opens the same site and taps **Join a room**, then types the 4-letter code
-   plus a name.
-3. When riders appear on the big screen, hit **START JOUST**.
+1. Open **https://sound-and-motion.onrender.com** on a laptop (or a TV /
+   shared screen). Tap **Host the arena**.
+2. A 4-letter room code and QR appear. Everyone else **scans the QR**,
+   or opens the same site, taps **Join a room**, and types the code + a
+   name.
+3. When names show up on the big screen, hit **START JOUST**.
+4. Last rider standing — or highest score when the 3:00 clock runs out —
+   wins.
 
-The first load can take ~30 seconds if the free Render instance was asleep —
-wait, then refresh once if you still see `----` instead of a room code.
-Don't close or refresh the host tab mid-match.
+If the first load takes ~30 seconds, the free Render instance was asleep.
+Wait, then refresh once if the code is still `----`. Don’t close or
+refresh the host tab mid-match.
 
-No installs beyond Node itself — the WebSocket server is hand-written on
-top of Node's built-in `http` module, so there's nothing to `npm install`.
+**Playing over Discord / Zoom:** one person hosts and screen-shares the
+arena tab. Everyone else joins on their phone. If a camera can’t read the
+QR off a screen-share, tap **Copy join link** or type the 4-letter code.
 
-## Run it
+## Controls
+
+On the phone:
+
+- Tap left / right to move, tap **FLAP** to fly.
+- Optional: **Enable Tilt Controls** to steer by tilting (iOS asks once
+  for motion permission).
+- The phone buzzes on every beat. Flap on that buzz for a stronger
+  "perfect flap" (+10).
+
+On the arena:
+
+- Hit another rider from **above** to unhorse them (+100).
+- Don’t fall in the lava. Each rider has **3 lives**.
+- Every 8 beats, **the drop** spikes gravity for two beats.
+
+## Run it locally
+
+Needs Node 18+. No `npm install` required to play.
 
 ```
 node server.js
 ```
 
-You'll see something like:
+Then open http://localhost:3000 — landing page with **Host the arena**
+and **Join a room**.
 
 ```
   SkyJoust Party server running
   --------------------------------
-  Host screen (open on laptop/TV):  http://localhost:3000/host
+  Open this on any device:          http://localhost:3000/
+  Host screen (laptop/TV):          http://localhost:3000/host
   Phones on the same WiFi, open:
     http://192.168.1.42:3000/controller
 ```
 
-1. Open the site on the laptop or TV everyone can see and click **Host the
-   arena** (or go straight to `/host`).
-2. Everyone else scans the QR on the host screen — or opens `/controller`
-   and types the 4-letter room code plus their name. Same Wi‑Fi is only
-   required for a local `localhost` run; the hosted game works from anywhere.
-3. Once at least one rider has joined, hit **START JOUST** on the host
-   screen. Riders' phones jump to the play screen automatically.
-4. Last rider standing (or highest score when the clock runs out) wins.
+Local LAN play: phones on the same Wi‑Fi can use the printed
+`/controller` URL, or scan the QR (it prefers the LAN address when the
+host page itself is on localhost).
 
-## Controls (on the phone)
-
-- Tap left/right zones to move, tap **FLAP** to gain height.
-- Or tap "Enable Tilt Controls" to steer by tilting the phone instead
-  (iOS will ask for a one-time motion-permission confirmation).
-- Your phone buzzes on every beat of the music — flapping right on that
-  buzz gives you a stronger "perfect flap."
+```
+npm test
+```
 
 ## How the pieces fit together
 
 ```
- phone (controller.html) ──┐
- phone (controller.html) ──┼── WebSocket ── server.js ── WebSocket ── host.html (big screen)
- phone (controller.html) ──┘        (relay only, no game logic)
+ phone (controller) ──┐
+ phone (controller) ──┼── WebSocket ── server.js ── WebSocket ── host (big screen)
+ phone (controller) ──┘        (relay only, no game logic)
 ```
 
-- **server.js** is a plain relay. It knows about "rooms" (one host + up to
-  8 phones) and forwards small JSON messages between them. It never runs
-  any game logic itself.
-- **host.html / host.js** is where the entire game actually lives: physics,
-  collision, scoring, and the music engine (Web Audio API, synthesized
-  live — no audio files, so nothing to license or download). It renders
-  everything to a `<canvas>`.
-- **controller.html / controller.js** is intentionally dumb: it only sends
-  button-state changes (`left`/`right`/`flap`/`tilt`) and receives small
-  status updates (`alive`, `score`, `beat` for vibration).
+| Piece | Role |
+|---|---|
+| `public/index.html` | Landing: host vs join |
+| `public/host.html` / `host.js` | The whole game: physics, scoring, canvas, music |
+| `public/controller.html` / `controller.js` | Phone input + haptics only |
+| `server.js` | Static files + room relay (up to 8 riders) |
+| `public/shared/qr.js` | Join QR generated in the browser (no third-party API) |
 
-### Why phones don't run any simulation
+The host is the single source of truth — same model as Jackbox. Phones
+only send `left` / `right` / `flap` / `tilt`. A phone can drop and
+rejoin as the same rider. If the host tab is gone for more than ~12
+seconds, the room closes.
 
-Real-time physics is hard to keep in sync across several phones with
-different WiFi latency and clock drift. Rather than fight that, only the
-**host** simulates the world — phones are pure input devices, the same
-model Jackbox-style party games use. That means the only things crossing
-the network are tiny, order-tolerant messages ("flap key went down"),
-which is exactly the kind of traffic normal home WiFi handles cleanly even
-with 8 phones connected. It also means a phone can drop and rejoin without
-ever corrupting the shared game state, since it never held any of that
-state to begin with.
+Music is synthesized live with the Web Audio API (no audio files).
 
-### Music-driven gameplay, specifically
+- **Perfect flaps** — within ~130ms of a beat: 35% more lift and +10.
+- **The drop** — every 8 beats, gravity ×1.4 for two beats; screen shake.
+- **Tempo ramp** — 128 BPM climbs toward 176 as the match goes on.
 
-- A `setInterval`-based lookahead scheduler drives a synthesized kick/hat/
-  bass loop via the Web Audio API and ticks out a `beat` event over the
-  WebSocket to every phone (which vibrates in time) and to the canvas
-  (a light flash).
-- **Perfect flaps**: flapping within ~130ms of a beat gives 35% more lift
-  and bonus points — timing your flying to the music is rewarded.
-- **The drop**: every 8 beats, gravity spikes 40% for two beats and the
-  screen shakes — a hazard triggered directly by the music's structure,
-  not a fixed timer.
-- **Tempo ramp**: BPM climbs from 128 toward 176 over the course of a
-  match, so the beat window (and the pace of drops) tightens as the game
-  goes on.
+## Deploy
 
-## Known limitations / good next steps
+Pushes to `main` on [molokochris/sound_and_motion](https://github.com/molokochris/sound_and_motion)
+are what Render should serve. If the live site still looks old, open the
+Render dashboard for `sound-and-motion` and **Manual Deploy** the latest
+`main` commit.
 
-- A phone that drops mid-match and reconnects within a few seconds
-  resumes the same rider. If the host tab is closed for more than ~12
-  seconds, the room ends and everyone must rejoin.
-- The join QR is generated in the browser (no third-party QR API). If a
-  camera can't read it, type the 4-letter code at `/controller` instead.
-- Designed for up to 8 riders per room; the canvas layout starts to feel
-  cramped much beyond that.
+Do **not** use GitHub Pages for this game. Pages cannot host the
+WebSocket relay.
+
+## Notes
+
+- Up to 8 riders per room. The canvas gets cramped past that.
+- If a camera can’t read the QR, type the 4-letter code at `/controller`.
+- Click the big room code on the host screen to copy it.
