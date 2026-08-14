@@ -13,13 +13,17 @@
     },
     "ios": {
       "supportsTablet": false,
+      "bundleIdentifier": "com.soundandmusic.controller",
       "infoPlist": {
         "NSCameraUsageDescription": "Scan the host QR to join a Sound and Music room."
       }
     },
     "android": {
+      "package": "com.soundandmusic.controller",
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "INTERNET",
+        "VIBRATE"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
