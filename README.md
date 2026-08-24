@@ -12,6 +12,38 @@ Team / judge talk track: see `PRESENTATION.txt` in this repo.
 Phones do **not** need the same Wi‑Fi. Everything (pages + WebSocket) is
 hosted on Render.
 
+## Screenshots
+
+Landing — host the arena on a laptop/TV, or join from a phone.
+
+![Landing page](screenshots/landing.png)
+
+Host lobby — 4-letter room code, QR, and join link.
+
+![Host lobby waiting for riders](screenshots/host-lobby.png)
+
+Phone join — room code is already filled from the QR / link.
+
+<img src="screenshots/phone-join.png" alt="Phone join screen with room code filled in" width="320">
+
+Phone waiting — rider is in the room until the host starts.
+
+<img src="screenshots/phone-waiting.png" alt="Phone waiting for the host to start the joust" width="320">
+
+Host with a rider ready.
+
+![Host lobby with one rider ready](screenshots/host-ready.png)
+
+Countdown, then the arena.
+
+![Match countdown](screenshots/countdown.png)
+
+![Arena gameplay](screenshots/arena.png)
+
+Phone controller during a match — left / right and FLAP.
+
+<img src="screenshots/phone-controller.png" alt="Phone controller with FLAP button" width="320">
+
 ## Play (for judges and teammates)
 
 1. Open **https://sound-and-motion.onrender.com** on a laptop (or a TV /
