@@ -30,6 +30,10 @@ async function main() {
   const landingHtml = await landingRes.text();
   check('landing page 200', landingRes.status === 200);
   check('landing explains host + join', landingHtml.includes('Host the arena') && landingHtml.includes('Join a room'));
+  check('landing has og:image', landingHtml.includes('og:image') && landingHtml.includes('/og-image.png'));
+  check('landing allows indexing', landingHtml.includes('index, follow'));
+  check('landing has JSON-LD VideoGame', landingHtml.includes('application/ld+json') && landingHtml.includes('"VideoGame"'));
+  check('landing links llms.txt', landingHtml.includes('/llms.txt'));
 
   const hostPageRes = await fetch(`http://localhost:${PORT}/host`);
   const hostHtml = await hostPageRes.text();
@@ -45,6 +49,29 @@ async function main() {
   check('favicon.ico 200', faviconRes.status === 200);
   const ogRes = await fetch(`http://localhost:${PORT}/og-image.png`);
   check('og-image 200', ogRes.status === 200);
+  check('og-image is png', (ogRes.headers.get('content-type') || '').includes('image/png'));
+  const robotsRes = await fetch(`http://localhost:${PORT}/robots.txt`);
+  const robotsTxt = await robotsRes.text();
+  check('robots.txt 200', robotsRes.status === 200);
+  check('robots.txt allows crawlers', robotsTxt.includes('User-agent: *') && robotsTxt.includes('Allow: /'));
+  check('robots.txt lists sitemap', robotsTxt.includes('Sitemap: https://sound-and-motion.onrender.com/sitemap.xml'));
+  check('robots.txt allows GPTBot', robotsTxt.includes('GPTBot') && robotsTxt.includes('ClaudeBot'));
+  const sitemapRes = await fetch(`http://localhost:${PORT}/sitemap.xml`);
+  const sitemapXml = await sitemapRes.text();
+  check('sitemap 200', sitemapRes.status === 200);
+  check('sitemap lists landing + host + controller', sitemapXml.includes('sound-and-motion.onrender.com/</loc>') && sitemapXml.includes('/host') && sitemapXml.includes('/controller'));
+  check('sitemap lists og-image', sitemapXml.includes('/og-image.png'));
+  const llmsRes = await fetch(`http://localhost:${PORT}/llms.txt`);
+  const llmsTxt = await llmsRes.text();
+  check('llms.txt 200', llmsRes.status === 200);
+  check('llms.txt describes the game', llmsTxt.includes('Jackbox-style') && llmsTxt.includes('Host the arena'));
+  const shotRes = await fetch(`http://localhost:${PORT}/screenshots/arena.png`);
+  check('screenshot arena 200', shotRes.status === 200);
+  check('screenshot is png', (shotRes.headers.get('content-type') || '').includes('image/png'));
+  const hostHtmlHasOg = hostHtml.includes('og:image') && hostHtml.includes('/og-image.png');
+  check('host page has og:image', hostHtmlHasOg);
+  const controllerHtml = await (await fetch(`http://localhost:${PORT}/controller`)).text();
+  check('controller page has og:image', controllerHtml.includes('og:image') && controllerHtml.includes('/og-image.png'));
   const manifestRes = await fetch(`http://localhost:${PORT}/site.webmanifest`);
   check('web manifest 200', manifestRes.status === 200 && (await manifestRes.json()).short_name === 'Sound & Music');
 

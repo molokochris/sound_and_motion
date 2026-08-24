@@ -14,6 +14,10 @@ hosted on Render.
 
 ## Screenshots
 
+Share card (Open Graph / Twitter / Discord) — `https://sound-and-motion.onrender.com/og-image.png`
+
+![Sound and Music share card](public/og-image.png)
+
 Landing — host the arena on a laptop/TV, or join from a phone.
 
 ![Landing page](screenshots/landing.png)
@@ -158,6 +162,11 @@ Render dashboard for `sound-and-motion` and **Manual Deploy** the latest
 
 Do **not** use GitHub Pages for this game. Pages cannot host the
 WebSocket relay.
+
+Crawlers, social unfurlers, and LLMs are allowed. The live site
+serves `robots.txt`, `sitemap.xml`, `llms.txt`, JSON-LD on the
+landing page, and screenshots at `/screenshots/*.png`. Sharing the
+game URL uses `/og-image.png` (1200×630).
 
 ## Notes
 

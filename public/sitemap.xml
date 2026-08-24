@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://sound-and-motion.onrender.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://sound-and-motion.onrender.com/og-image.png</image:loc>
+      <image:title>Sound and Music</image:title>
+      <image:caption>Party joust: phones are the controllers. Last rider standing wins.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://sound-and-motion.onrender.com/screenshots/landing.png</image:loc>
+      <image:title>Landing page</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sound-and-motion.onrender.com/screenshots/host-lobby.png</image:loc>
+      <image:title>Host lobby with room code and QR</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sound-and-motion.onrender.com/screenshots/arena.png</image:loc>
+      <image:title>Arena gameplay</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://sound-and-motion.onrender.com/screenshots/phone-controller.png</image:loc>
+      <image:title>Phone controller</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://sound-and-motion.onrender.com/host</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sound-and-motion.onrender.com/controller</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://sound-and-motion.onrender.com/llms.txt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.4</priority>
+  </url>
+</urlset>

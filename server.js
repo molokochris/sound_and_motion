@@ -37,8 +37,53 @@ const MIME = {
   '.png': 'image/png',
   '.ico': 'image/x-icon',
   '.webp': 'image/webp',
+  '.txt': 'text/plain; charset=utf-8',
+  '.xml': 'application/xml; charset=utf-8',
+  '.md': 'text/markdown; charset=utf-8',
   '.apk': 'application/vnd.android.package-archive',
 };
+
+const SCREENSHOTS_DIR = path.join(__dirname, 'screenshots');
+
+function sendFile(res, filePath, extraHeaders) {
+  fs.stat(filePath, (err, stats) => {
+    if (err || !stats.isFile()) {
+      const notFound = path.join(PUBLIC_DIR, '404.html');
+      fs.readFile(notFound, (err2, page) => {
+        res.writeHead(404, {
+          'Content-Type': 'text/html; charset=utf-8',
+          'X-Content-Type-Options': 'nosniff',
+          'X-Robots-Tag': 'noindex, nofollow',
+        });
+        res.end(err2 ? 'Not found' : page);
+      });
+      return;
+    }
+
+    const ext = path.extname(filePath);
+    const headers = {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Content-Length': stats.size,
+      'X-Content-Type-Options': 'nosniff',
+      ...(extraHeaders || {}),
+    };
+    if (ext === '.html' || ext === '.js') headers['Cache-Control'] = 'no-cache';
+    else if (ext === '.png' || ext === '.ico' || ext === '.webp' || ext === '.svg') {
+      headers['Cache-Control'] = 'public, max-age=86400';
+    } else if (ext === '.txt' || ext === '.xml' || ext === '.md') {
+      headers['Cache-Control'] = 'public, max-age=3600';
+    }
+    if (ext === '.html' && !headers['X-Robots-Tag']) {
+      headers['X-Robots-Tag'] = 'index, follow, max-image-preview:large';
+    }
+    if (ext === '.apk') {
+      headers['Content-Disposition'] = 'attachment; filename="sound-and-music.apk"';
+    }
+
+    res.writeHead(200, headers);
+    fs.createReadStream(filePath).pipe(res);
+  });
+}
 
 function isPrivateHost(host) {
   const h = String(host || '').split(':')[0];
@@ -75,6 +120,16 @@ function serveStatic(req, res) {
   if (urlPath === '/controller') urlPath = '/controller.html';
   if (urlPath === '/host') urlPath = '/host.html';
 
+  if (urlPath.startsWith('/screenshots/')) {
+    const name = path.basename(urlPath);
+    const shotPath = path.join(SCREENSHOTS_DIR, name);
+    if (!name || !shotPath.startsWith(SCREENSHOTS_DIR)) {
+      res.writeHead(403); res.end('Forbidden'); return;
+    }
+    sendFile(res, shotPath);
+    return;
+  }
+
   if (urlPath === '/download' || urlPath === '/download-apk' || urlPath === '/app.apk' || urlPath === '/sound-and-music.apk') {
     const rootApk = path.join(__dirname, 'sound-and-music.apk');
     const publicApk = path.join(PUBLIC_DIR, 'sound-and-music.apk');
@@ -105,30 +160,7 @@ function serveStatic(req, res) {
     res.writeHead(403); res.end('Forbidden'); return;
   }
 
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      const notFound = path.join(PUBLIC_DIR, '404.html');
-      fs.readFile(notFound, (err2, page) => {
-        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff' });
-        res.end(err2 ? 'Not found: ' + urlPath : page);
-      });
-      return;
-    }
-
-    const ext = path.extname(filePath);
-    const headers = {
-      'Content-Type': MIME[ext] || 'application/octet-stream',
-      'Content-Length': stats.size,
-      'X-Content-Type-Options': 'nosniff',
-    };
-    if (ext === '.html' || ext === '.js') headers['Cache-Control'] = 'no-cache';
-    if (ext === '.apk') {
-      headers['Content-Disposition'] = 'attachment; filename="sound-and-music.apk"';
-    }
-
-    res.writeHead(200, headers);
-    fs.createReadStream(filePath).pipe(res);
-  });
+  sendFile(res, filePath);
 }
 
 const server = http.createServer(serveStatic);

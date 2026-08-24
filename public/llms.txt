@@ -1,0 +1,74 @@
+# Sound and Music
+
+> A free Jackbox-style party joust in the browser. One laptop or TV is the arena. Everyone else joins on their phone as a controller. Riders flap to fly, strike from above, and ride a live synthesized beat.
+
+Live game: https://sound-and-motion.onrender.com
+Source: https://github.com/molokochris/sound_and_motion
+
+## What it is
+
+Sound and Music is a multiplayer party game. You do not install anything to play in the browser. One person hosts the arena on a shared screen. Everyone else opens the site on their phone (or the optional Android APK) and becomes a rider.
+
+Phones do not need the same Wi-Fi. Pages and the WebSocket relay are hosted on Render.
+
+## Play
+
+1. Open https://sound-and-motion.onrender.com on a laptop or TV. Tap **Host the arena**.
+2. A 4-letter room code and QR appear. The QR is `https://sound-and-motion.onrender.com/controller?room=ABCD`.
+3. Phones scan the QR or tap **Join a room** and type the code plus a name.
+4. When names show up on the big screen, hit **START JOUST**.
+5. Last rider standing — or highest score when the 3:00 clock runs out — wins.
+
+Up to 8 riders per room. Multiple hosts can run at the same time; each host gets a different room code.
+
+## Controls
+
+On the phone:
+
+- Tap left / right to move, tap **FLAP** to fly.
+- The phone buzzes on every beat. Flap on that buzz for a stronger "perfect flap" (+10).
+
+On the arena:
+
+- Hit another rider from **above** to unhorse them (+100).
+- Hitting at the same height knocks both riders back.
+- Don't fall in the lava. Each rider has **3 lives**.
+- Every 8 beats, **the drop** spikes gravity for two beats.
+
+## Pages
+
+- [Landing](https://sound-and-motion.onrender.com/): host vs join vs Android APK
+- [Host / arena](https://sound-and-motion.onrender.com/host): the whole game (physics, scoring, canvas, music)
+- [Phone controller](https://sound-and-motion.onrender.com/controller): input + haptics only
+- [Open Graph image](https://sound-and-motion.onrender.com/og-image.png): 1200×630 share card
+- [Screenshots](https://sound-and-motion.onrender.com/screenshots/arena.png): gameplay stills
+- [Sitemap](https://sound-and-motion.onrender.com/sitemap.xml)
+- [Android APK](https://sound-and-motion.onrender.com/sound-and-music.apk)
+
+## Screenshots (absolute URLs)
+
+- Landing: https://sound-and-motion.onrender.com/screenshots/landing.png
+- Host lobby: https://sound-and-motion.onrender.com/screenshots/host-lobby.png
+- Host with a rider ready: https://sound-and-motion.onrender.com/screenshots/host-ready.png
+- Phone join: https://sound-and-motion.onrender.com/screenshots/phone-join.png
+- Phone waiting: https://sound-and-motion.onrender.com/screenshots/phone-waiting.png
+- Countdown: https://sound-and-motion.onrender.com/screenshots/countdown.png
+- Arena: https://sound-and-motion.onrender.com/screenshots/arena.png
+- Phone controller: https://sound-and-motion.onrender.com/screenshots/phone-controller.png
+
+## How it is built
+
+The host tab is the single source of truth (same model as Jackbox). Phones only send `left` / `right` / `flap` over WebSocket. `server.js` is a static file server plus a room relay — no game logic on the server.
+
+Music is synthesized live with the Web Audio API (no audio files).
+
+- Perfect flaps — within ~130ms of a beat: 35% more lift and +10
+- The drop — every 8 beats, gravity ×1.4 for two beats; screen shake
+- Tempo ramp — 128 BPM climbs toward 176 as the match goes on
+
+Optional native phone controller: `mobile/` (Expo). Same WebSocket, plus a camera QR scanner.
+
+## Optional
+
+- [GitHub README](https://github.com/molokochris/sound_and_motion): setup, architecture, local run
+- [Team talk track](https://github.com/molokochris/sound_and_motion/blob/main/PRESENTATION.txt)
